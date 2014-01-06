@@ -1,0 +1,68 @@
+﻿/**********************************************************************************
+ ==================================================================================
+    Copyright 2013 Tim Burnett 
+    
+    This file is part of ManagedDnsQuery.
+
+    ManagedDnsQuery is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ManagedDnsQuery is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with ManagedDnsQuery.  If not, see <http://www.gnu.org/licenses/>.
+ ==================================================================================
+ **********************************************************************************/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ManagedDnsQuery.DNS.MessageingInterfaces;
+
+namespace ManagedDnsQuery.DNS
+{
+    internal static class DnsExtensions
+    {
+        internal static readonly int HeaderSize = 12;
+
+        internal static IEnumerable<byte> ToLabelBytes(this string value)
+        {
+            var temp = new List<byte>();
+            value = value.Trim().TrimEnd(new[] {'.'});
+
+            foreach (var peice in value.Split('.'))
+            {
+                temp.Add((byte)peice.Length);
+                temp.AddRange(Encoding.ASCII.GetBytes(peice.Trim()));
+            }
+
+            temp.Add(0);
+            return temp;
+        }
+
+        internal static string ToByteString(this IEnumerable<byte> value)
+        {
+            var sb = new StringBuilder();
+            foreach (var b in value)
+                sb.Append(b);
+
+            return sb.ToString();
+        }
+
+        internal static bool IsExpired(this IMessage value)
+        {
+            var expired = true;
+
+            if (value != null && value.Answers != null && value.Answers.Any())
+                expired = value.Answers.Select(ans => ans.TimeStamp.AddSeconds(ans.Ttl)).Any(dt => dt <= DateTime.Now);
+
+            return expired;
+        }
+    }
+}

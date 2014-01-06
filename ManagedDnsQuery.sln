@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedDnsQuery", "ManagedDnsQuery\ManagedDnsQuery.csproj", "{76D93910-5DFD-427F-9E36-F3281F99620B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedDnsQuery.Test", "ManagedDnsQuery.Test\ManagedDnsQuery.Test.csproj", "{A032941A-D3EA-43C7-91B5-CA5D720112FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{2E8E7CA4-695B-4DB0-8C35-C925510A3157}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2BBBB2E4-843C-48F9-B3E4-41D9E156139A}"
+	ProjectSection(SolutionItems) = preProject
+		License.txt = License.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76D93910-5DFD-427F-9E36-F3281F99620B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76D93910-5DFD-427F-9E36-F3281F99620B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76D93910-5DFD-427F-9E36-F3281F99620B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76D93910-5DFD-427F-9E36-F3281F99620B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A032941A-D3EA-43C7-91B5-CA5D720112FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A032941A-D3EA-43C7-91B5-CA5D720112FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A032941A-D3EA-43C7-91B5-CA5D720112FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A032941A-D3EA-43C7-91B5-CA5D720112FA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
