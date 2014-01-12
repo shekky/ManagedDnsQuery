@@ -39,23 +39,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DNS\BitArrayExtensions.cs" />
     <Compile Include="DNS\DnsExtensions.cs" />
     <Compile Include="DNS\ExternalConcretes\AaaaRecord.cs" />
     <Compile Include="DNS\ExternalConcretes\ARecord.cs" />
     <Compile Include="DNS\ExternalConcretes\CNameRecord.cs" />
+    <Compile Include="DNS\ExternalConcretes\Header.cs" />
+    <Compile Include="DNS\ExternalConcretes\Message.cs" />
     <Compile Include="DNS\ExternalConcretes\MxRecord.cs" />
     <Compile Include="DNS\ExternalConcretes\NsRecord.cs" />
     <Compile Include="DNS\ExternalConcretes\PtrRecord.cs" />
+    <Compile Include="DNS\ExternalConcretes\Question.cs" />
     <Compile Include="DNS\ExternalConcretes\SoaRecord.cs" />
     <Compile Include="DNS\ExternalConcretes\TxtRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\IAaaaRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\IARecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\ICNameRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\IFormatAsString.cs" />
+    <Compile Include="DNS\ExternalInterfaces\IHeader.cs" />
+    <Compile Include="DNS\ExternalInterfaces\IMessage.cs" />
     <Compile Include="DNS\ExternalInterfaces\IMxRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\INsRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\IPtrRecord.cs" />
+    <Compile Include="DNS\ExternalInterfaces\IQuestion.cs" />
     <Compile Include="DNS\ExternalInterfaces\IResourceRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\ISoaRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\ITxtRecord.cs" />
@@ -67,6 +72,7 @@
     <Compile Include="DNS\MessageingImplementations\ResourceRecord.cs" />
     <Compile Include="DNS\MessageingInterfaces\IByteConverter.cs" />
     <Compile Include="DNS\MessageingInterfaces\IByteReader.cs" />
+    <Compile Include="DNS\MessageingInterfaces\IConvertToExternal.cs" />
     <Compile Include="DNS\MessageingInterfaces\IHeader.cs" />
     <Compile Include="DNS\MessageingInterfaces\IMessage.cs" />
     <Compile Include="DNS\MessageingInterfaces\IQuestion.cs" />

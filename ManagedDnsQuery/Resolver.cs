@@ -35,7 +35,6 @@ namespace ManagedDnsQuery
         public int TimeOut { get; set; }
         public int Retries { get; set; }
         public IDnsTransport Transport { get; private set; }
-        public IEnumerable<IPEndPoint> DnsServers { get; set; }
         public IQueryCache Cache { get; private set; }
         
         public Resolver()
@@ -47,17 +46,16 @@ namespace ManagedDnsQuery
             UseRecursion = true;
         }
 
-        public Resolver(IDnsTransport transport, IEnumerable<IPEndPoint> dnsServers, int retrys = 3, int timeout = 60, bool useRecursion = true)
+        public Resolver(IDnsTransport transport, int retrys = 3, int timeout = 60, bool useRecursion = true)
         {
             Transport = transport;
-            DnsServers = dnsServers;
             Retries = retrys;
             TimeOut = timeout;
             UseRecursion = useRecursion;
             Cache = new QueryCache();
         }
 
-        public IEnumerable<object> Query(string name, RecordType queryType, RecordClass rClass = RecordClass.In, bool includeAdditionals = false)
+        public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint DnsServer, RecordClass rClass = RecordClass.In)
         {
             IMessage request = new Message
                                    {
@@ -81,18 +79,14 @@ namespace ManagedDnsQuery
 
             var cached = Cache.CheckCache(request.Questions.FirstOrDefault());
             if (cached != null && cached.Answers != null && cached.Answers.Any())
-                return cached.GetExternalAnswerRecords(includeAdditionals);
+                return cached.GetExternalAnswer();
 
-            var result = Transport.SendRequest(request, DnsServers.FirstOrDefault(), TimeOut);
+            var result = Transport.SendRequest(request, DnsServer, TimeOut);
 
             if (result == null || result.Header == null || result.Header.RCode == ResponseCode.FormErr || result.Header.RCode == ResponseCode.ServFail)
                 for (var ndx = 1; ndx < Retries; ++ndx)
                 {
-                    if (DnsServers != null && DnsServers.Any() && DnsServers.Count() > ndx)
-                        result = Transport.SendRequest(request, DnsServers.Skip(ndx).FirstOrDefault(), TimeOut);
-                    else
-                        result = Transport.SendRequest(request, DnsServers.FirstOrDefault(), TimeOut);
-
+                    result = Transport.SendRequest(request, DnsServer, TimeOut);
                     if (result != null && result.Header != null && (result.Header.RCode != ResponseCode.FormErr && result.Header.RCode != ResponseCode.ServFail))
                         ndx = Retries;
                 }
@@ -100,7 +94,7 @@ namespace ManagedDnsQuery
             if (result != null)
                 Cache.AddCache(result);
 
-            return result != null ? result.GetExternalAnswerRecords(includeAdditionals) : null;
+            return result != null ? result.GetExternalAnswer() : null;
         }
     }
 }

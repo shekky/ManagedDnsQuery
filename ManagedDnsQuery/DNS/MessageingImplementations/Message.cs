@@ -105,17 +105,16 @@ namespace ManagedDnsQuery.DNS.MessageingImplementations
             return bytes;
         }
 
-        public IEnumerable<object> GetExternalAnswerRecords(bool includeAdditionals = false)
+        public ExternalInterfaces.IMessage GetExternalAnswer()
         {
-            var results = Answers.Select(ans => ans.ConvertToExternalType()).ToList();
-
-            if(includeAdditionals && Authorities.Any())
-                results.AddRange(Authorities.Select(auth => auth.ConvertToExternalType()));
-
-            if(includeAdditionals && Additionals.Any())
-                results.AddRange(Additionals.Select(adds => adds.ConvertToExternalType()));
-
-            return results;
+            return new ExternalConcretes.Message
+                       {
+                           Header = Header.ToExternal(),
+                           Questions = Questions.Select(qu => qu.ToExternal()),
+                           Answers = Answers.Select(ans => ans.ConvertToExternalType()),
+                           Authorities = Authorities.Select(auth => auth.ConvertToExternalType()),
+                           Additionals = Additionals.Select(adds => adds.ConvertToExternalType()),
+                       };
         }
     }
 }

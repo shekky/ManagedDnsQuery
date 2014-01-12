@@ -36,6 +36,7 @@ namespace ManagedDnsQuery.DNS.MessageingImplementations
         public bool Ra { get; set; }
         public ushort Z { get; set; }
         public ResponseCode RCode { get; set; }
+
         public ushort QdCount { get; set; }
         public ushort AnCount { get; set; }
         public ushort NsCount { get; set; }
@@ -98,6 +99,27 @@ namespace ManagedDnsQuery.DNS.MessageingImplementations
 
             return bytes;
         }
+
+        public ExternalInterfaces.IHeader ToExternal()
+        {
+            return new ExternalConcretes.Header
+                       {
+                           Identifier = Id,
+                           QueryOrResponse = Qr,
+                           OperationCode = OpCode,
+                           AuthoritativeAnswer = Aa,
+                           Truncated = Tc,
+                           RecursionDesired = Rd,
+                           RecrusionAvailable = Ra,
+                           Z = Z,
+                           ResponseCode = RCode,
+                           QuestionCount = QdCount,
+                           AnswerCount = AnCount,
+                           NameServerCount = NsCount,
+                           AdditionalCount = ArCount
+                       };
+        }
+
     }
 }
 //

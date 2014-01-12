@@ -19,10 +19,9 @@
  ==================================================================================
  **********************************************************************************/
 
-using System.Collections.Generic;
 using System.Net;
 using ManagedDnsQuery.DNS;
-using ManagedDnsQuery.DNS.MessageingInterfaces;
+using ManagedDnsQuery.DNS.ExternalInterfaces;
 
 namespace ManagedDnsQuery
 {
@@ -32,9 +31,8 @@ namespace ManagedDnsQuery
         int TimeOut { get; set; }
         int Retries { get; set; }
         IDnsTransport Transport { get; } 
-        IEnumerable<IPEndPoint> DnsServers { get; set; }
 
         IQueryCache Cache { get; }
-        IEnumerable<object> Query(string name, RecordType queryType, RecordClass rClass = RecordClass.In, bool includeAdditionals = false);
+        IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
     }
 }

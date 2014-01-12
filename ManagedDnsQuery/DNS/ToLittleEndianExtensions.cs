@@ -20,7 +20,6 @@
  **********************************************************************************/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -37,11 +36,6 @@ namespace ManagedDnsQuery.DNS
         internal static uint ToLeUInt(this IEnumerable<byte> value)
         {
             return (uint) IPAddress.NetworkToHostOrder(BitConverter.ToInt32(value.ToArray(), 0));
-        }
-
-        internal static BitArray ToLeBits(this IEnumerable<byte> value)
-        {
-            return value.ToLeUShort().ToBits();
         }
     }
 }

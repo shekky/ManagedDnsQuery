@@ -19,46 +19,16 @@
  ==================================================================================
  **********************************************************************************/
 
-namespace ManagedDnsQuery.DNS.MessageingInterfaces
+using System.Collections.Generic;
+
+namespace ManagedDnsQuery.DNS.ExternalInterfaces
 {
-    internal enum HeaderBitPosition
+    public interface IMessage
     {
-        RCode = 0,
-        Z = 4,
-        Ra = 7,
-        Rd = 8,
-        Tc = 9,
-        Aa = 10,
-        OpCode = 11,
-        Qr = 15,
-    }
-
-    internal enum HeaderBytePosition
-        {
-            Id = 0,
-            Flags = 2,
-            QdCount = 4,
-            AnCount = 6,
-            NsCount = 8,
-            ArCount = 10,
-        }
-
-    public interface IHeader : IByteConverter
-    {
-        ushort Id { get; set; }
-        bool Aa { get; set; }
-        bool Tc { get; set; }
-        bool Rd { get; set; }
-        bool Ra { get; set; }
-        ushort Z { get; set; }
-        ushort QdCount { get; set; }
-        ushort AnCount { get; set; }
-        ushort NsCount { get; set; }
-        ushort ArCount { get; set; }
-        Qr Qr { get; set; }
-        OpCode OpCode { get; set; }
-        ResponseCode RCode { get; set; }
-
-        ExternalInterfaces.IHeader ToExternal();
+        IHeader Header { get; set; }
+        IEnumerable<IQuestion> Questions { get; set; }
+        IEnumerable<object> Answers { get; set; }
+        IEnumerable<object> Authorities { get; set; }
+        IEnumerable<object> Additionals { get; set; }
     }
 }

@@ -39,7 +39,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
                 .Returns(new Message(GetRawTestData(RecordType.ARecord)));
 
-            IResolver resolver = new Resolver(mockedTransport.Object, new[] { new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53) });
+            IResolver resolver = new Resolver(mockedTransport.Object);
 
             var expected = new []
                             {
@@ -69,7 +69,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                     },
                             };
             
-            var actual = resolver.Query("yahoo.com", RecordType.ARecord).ToACollection();
+            var actual = resolver.Query("yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53)).Answers.ToACollection();
             AssertEquality(expected, actual);
 
 
@@ -78,7 +78,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                 .Returns(new Message());
 
             var expected1 = actual;
-            actual = resolver.Query("yahoo.com", RecordType.ARecord).ToACollection();
+            actual = resolver.Query("yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53)).Answers.ToACollection();
             AssertEquality(expected1, actual);
         }
 
@@ -89,7 +89,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
                 .Returns(new Message(GetRawTestData(RecordType.MxRecord)));
 
-            IResolver resolver = new Resolver(mockedTransport.Object, new[] { new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53) });
+            IResolver resolver = new Resolver(mockedTransport.Object);
 
             var expected = new[]
                             {
@@ -122,7 +122,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                     },
                             };
 
-            var actual = resolver.Query("yahoo.com", RecordType.MxRecord).ToMxCollection();
+            var actual = resolver.Query("yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53)).Answers.ToMxCollection();
             AssertEquality(expected, actual);
 
 
@@ -131,7 +131,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                 .Returns(new Message());
 
             var expected1 = actual;
-            actual = resolver.Query("yahoo.com", RecordType.MxRecord).ToMxCollection();
+            actual = resolver.Query("yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53)).Answers.ToMxCollection();
             AssertEquality(expected1, actual);
         }
 

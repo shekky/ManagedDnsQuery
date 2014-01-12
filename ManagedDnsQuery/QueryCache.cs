@@ -29,26 +29,30 @@ namespace ManagedDnsQuery
     public sealed class QueryCache : IQueryCache
     {
         private IDictionary<string, IMessage> Cache { get; set; }
+        private object Lock = new object();
 
         public IMessage CheckCache(IQuestion question)
         {
             IMessage result = null;
 
-            if(Cache == null)
-                Cache = new Dictionary<string, IMessage>();
-
-            var key = question
-                        .ToBytes()
-                        .ToByteString();
-
-            if(Cache.ContainsKey(key))
+            lock (Lock)
             {
-                if (Cache[key].IsExpired())
+                if (Cache == null)
+                    Cache = new Dictionary<string, IMessage>();
+
+                var key = question
+                            .ToBytes()
+                            .ToByteString();
+
+                if (Cache.ContainsKey(key))
                 {
-                    Cache.Remove(key);
-                    return result;
+                    if (Cache[key].IsExpired())
+                    {
+                        Cache.Remove(key);
+                        return result;
+                    }
+                    result = Cache[key];
                 }
-                result = Cache[key];
             }
 
             return result;
@@ -60,11 +64,13 @@ namespace ManagedDnsQuery
                 return false;
 
             var added = false;
-
-            if (!Cache.ContainsKey(message.Questions.FirstOrDefault().ToBytes().ToByteString()))
+            lock(Lock)
             {
-                Cache.Add(message.Questions.FirstOrDefault().ToBytes().ToByteString(), message);
-                added = true;
+                if (!Cache.ContainsKey(message.Questions.FirstOrDefault().ToBytes().ToByteString()))
+                {
+                    Cache.Add(message.Questions.FirstOrDefault().ToBytes().ToByteString(), message);
+                    added = true;
+                }
             }
 
             return added;

@@ -26,5 +26,7 @@ namespace ManagedDnsQuery.DNS.MessageingInterfaces
         string QName { get; set; }
         RecordType QType { get; set; }
         RecordClass QClass { get; set; }
+
+        ExternalInterfaces.IQuestion ToExternal();
     }
 }

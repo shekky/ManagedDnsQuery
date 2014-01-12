@@ -19,7 +19,6 @@
  ==================================================================================
  **********************************************************************************/
 
-using System;
 using System.Collections.Generic;
 
 namespace ManagedDnsQuery.DNS.MessageingInterfaces
@@ -32,6 +31,6 @@ namespace ManagedDnsQuery.DNS.MessageingInterfaces
         IEnumerable<IResourceRecord> Authorities { get; set; }
         IEnumerable<IResourceRecord> Additionals { get; set; }
 
-        IEnumerable<object> GetExternalAnswerRecords(bool includeAdditionals);
+        ExternalInterfaces.IMessage GetExternalAnswer();
     }
 }

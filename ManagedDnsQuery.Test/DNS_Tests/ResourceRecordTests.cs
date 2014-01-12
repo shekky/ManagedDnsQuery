@@ -61,7 +61,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                };
 
             IByteReader reader = new ByteReader(response);
-            new Question(reader); //Just to advance the position
+            new DNS.MessageingImplementations.Question(reader); //Just to advance the position
 
             var expectedRr = new ResourceRecord(null)
                                  {

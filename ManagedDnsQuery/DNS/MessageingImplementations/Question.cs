@@ -49,6 +49,16 @@ namespace ManagedDnsQuery.DNS.MessageingImplementations
 
             return bytes;
         }
+
+        public ExternalInterfaces.IQuestion ToExternal()
+        {
+            return new ExternalConcretes.Question
+                       {
+                           QName = QName,
+                           QType = QType,
+                           QClass = QClass,
+                       };
+        }
     }
 }
 

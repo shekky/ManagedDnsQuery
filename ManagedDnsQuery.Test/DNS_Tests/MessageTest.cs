@@ -339,7 +339,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                         },
                 };
 
-            var actual = message.GetExternalAnswerRecords(false).ToMxCollection();
+            var actual = message.GetExternalAnswer().Answers.ToMxCollection();
             AssertEquality(expected, actual);
         }
 
@@ -599,7 +599,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             IMessage message = new Message(rawResponse);
 
-            AssertEquality(expected, message.GetExternalAnswerRecords(false).ToACollection());
+            AssertEquality(expected, message.GetExternalAnswer().Answers.ToACollection());
         }
     }
 }
