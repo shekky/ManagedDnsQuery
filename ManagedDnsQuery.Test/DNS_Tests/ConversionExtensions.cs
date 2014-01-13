@@ -35,5 +35,35 @@ namespace ManagedDnsQuery.Test.DNS_Tests
         {
             return GenericCollectionConverter<ARecord>.ToCollection(values);
         }
+
+        internal static IEnumerable<CNameRecord> ToCNameCollection(this IEnumerable<object> values)
+        {
+            return GenericCollectionConverter<CNameRecord>.ToCollection(values);
+        }
+
+        internal static IEnumerable<NsRecord> ToNsCollection(this IEnumerable<object> values)
+        {
+            return GenericCollectionConverter<NsRecord>.ToCollection(values);
+        }
+
+        internal static IEnumerable<SoaRecord> ToSoaCollection(this IEnumerable<object> values)
+        {
+            return GenericCollectionConverter<SoaRecord>.ToCollection(values);
+        }
+
+        internal static IEnumerable<TxtRecord> ToTxtCollection(this IEnumerable<object> values)
+        {
+            return GenericCollectionConverter<TxtRecord>.ToCollection(values);
+        }
+
+        internal static IEnumerable<PtrRecord> ToPtrCollection(this IEnumerable<object> values)
+        {
+            return GenericCollectionConverter<PtrRecord>.ToCollection(values);
+        }
+
+        internal static IEnumerable<AaaaRecord> ToAaaaCollection(this IEnumerable<object> values)
+        {
+            return GenericCollectionConverter<AaaaRecord>.ToCollection(values);
+        }
     }
 }

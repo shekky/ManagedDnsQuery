@@ -22,6 +22,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
@@ -63,6 +65,33 @@ namespace ManagedDnsQuery.DNS
                 expired = value.Answers.Select(ans => ans.TimeStamp.AddSeconds(ans.Ttl)).Any(dt => dt <= DateTime.Now);
 
             return expired;
+        }
+
+        internal static string ToArpa(this string ip)
+        {
+            IPAddress scratch = null;
+            if (!IPAddress.TryParse(ip.TrimEnd(new [] {'.'}), out scratch))
+                return string.Empty;
+
+            var sb = new StringBuilder();
+            if(scratch.AddressFamily == AddressFamily.InterNetwork)
+            {
+                sb.Append("in-addr.arpa.");
+                foreach (var block in scratch.GetAddressBytes())
+                    sb.Insert(0, string.Format("{0}.", block));
+            }
+
+            if (scratch.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                sb.Append("ip6.arpa.");
+                foreach (var block in scratch.GetAddressBytes())
+                {
+                    sb.Insert(0, string.Format("{0:x}.", (block >> 4) & 0xf));
+                    sb.Insert(0, string.Format("{0:x}.", (block >> 0) & 0xf));
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }
