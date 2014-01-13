@@ -66,6 +66,7 @@
     <Compile Include="DNS_Tests\RecordTests\PtrRecordTests.cs" />
     <Compile Include="DNS_Tests\RecordTests\SoaRecordTests.cs" />
     <Compile Include="DNS_Tests\RecordTests\TxtRecordTests.cs" />
+    <Compile Include="DNS_Tests\ResolverAAQueryTests.cs" />
     <Compile Include="DNS_Tests\ResolverQueryTests.cs" />
     <Compile Include="DNS_Tests\ResourceRecordTests.cs" />
     <Compile Include="EqualityComparer.cs" />

@@ -29,7 +29,7 @@ namespace ManagedDnsQuery
     public sealed class QueryCache : IQueryCache
     {
         private IDictionary<string, IMessage> Cache { get; set; }
-        private object Lock = new object();
+        private readonly object Lock = new object();
 
         public IMessage CheckCache(IQuestion question)
         {

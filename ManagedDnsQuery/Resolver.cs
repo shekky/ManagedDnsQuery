@@ -46,13 +46,13 @@ namespace ManagedDnsQuery
             UseRecursion = true;
         }
 
-        public Resolver(IDnsTransport transport, int retrys = 3, int timeout = 60, bool useRecursion = true)
+        public Resolver(IDnsTransport transport, IQueryCache cache = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
         {
             Transport = transport;
             Retries = retrys;
             TimeOut = timeout;
             UseRecursion = useRecursion;
-            Cache = new QueryCache();
+            Cache = (cache ?? new QueryCache());
         }
 
         public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
