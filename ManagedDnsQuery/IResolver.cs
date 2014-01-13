@@ -34,5 +34,6 @@ namespace ManagedDnsQuery
 
         IQueryCache Cache { get; }
         IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
+        IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
     }
 }

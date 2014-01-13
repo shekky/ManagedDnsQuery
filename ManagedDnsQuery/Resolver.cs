@@ -55,8 +55,11 @@ namespace ManagedDnsQuery
             Cache = new QueryCache();
         }
 
-        public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint DnsServer, RecordClass rClass = RecordClass.In)
+        public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
         {
+            if (!string.IsNullOrEmpty(name) && name.Substring(name.Length - 1) != ".")
+                name = string.Format("{0}.", name);
+
             IMessage request = new Message
                                    {
                                        Header = new Header(null)
@@ -70,7 +73,7 @@ namespace ManagedDnsQuery
                                                         {
                                                             new Question(null)
                                                                 {
-                                                                    QName = name,
+                                                                    QName = (queryType == RecordType.PtrRecord ? name.ToArpa() : name),
                                                                     QType = queryType,
                                                                     QClass = rClass,
                                                                 },
@@ -81,12 +84,12 @@ namespace ManagedDnsQuery
             if (cached != null && cached.Answers != null && cached.Answers.Any())
                 return cached.GetExternalAnswer();
 
-            var result = Transport.SendRequest(request, DnsServer, TimeOut);
+            var result = Transport.SendRequest(request, dnsServer, TimeOut);
 
             if (result == null || result.Header == null || result.Header.RCode == ResponseCode.FormErr || result.Header.RCode == ResponseCode.ServFail)
                 for (var ndx = 1; ndx < Retries; ++ndx)
                 {
-                    result = Transport.SendRequest(request, DnsServer, TimeOut);
+                    result = Transport.SendRequest(request, dnsServer, TimeOut);
                     if (result != null && result.Header != null && (result.Header.RCode != ResponseCode.FormErr && result.Header.RCode != ResponseCode.ServFail))
                         ndx = Retries;
                 }
@@ -95,6 +98,24 @@ namespace ManagedDnsQuery
                 Cache.AddCache(result);
 
             return result != null ? result.GetExternalAnswer() : null;
+        }
+
+        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        {
+            var auth = Query(domain, RecordType.SoaRecord, dnsServer, rClass);
+            if (auth.Answers == null || !auth.Answers.Any())
+                return null;
+
+            var soaRecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.SoaRecord;
+            if (soaRecord == null)
+                return null;
+
+            auth = Query(soaRecord.MName, RecordType.ARecord, dnsServer, rClass);
+            if (auth.Answers == null || !auth.Answers.Any())
+                return null;
+
+            var arecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.ARecord;
+            return arecord == null ? null : Query(name, queryType, new IPEndPoint(arecord.Address, 53), rClass);
         }
     }
 }
