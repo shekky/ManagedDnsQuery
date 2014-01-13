@@ -30,7 +30,7 @@ using Moq;
 namespace ManagedDnsQuery.Test.DNS_Tests
 {
     [TestClass]
-    public class ResolverTests : EqualityComparer
+    public class ResolverQueryTests : EqualityComparer
     {
         [TestMethod]
         public void TestQueryARecord()
