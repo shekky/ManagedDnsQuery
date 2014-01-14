@@ -37,21 +37,6 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
             Position = pos > 0 ? pos : 12;
         }
 
-        //public byte NextByte
-        //{
-        //    get
-        //    {
-        //        var result = (byte)0;
-        //        if (Position < RawMessage.Count)
-        //        {
-        //            result = RawMessage.Skip(Position)
-        //                               .FirstOrDefault();
-        //            ++Position;
-        //        }
-        //        return result;
-        //    }
-        //}
-
         public byte NextByte()
         {
             var result = (byte)0;
@@ -63,31 +48,6 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
             }
             return result;
         }
-
-        //public string ReadLabels
-        //{
-        //    get
-        //    {
-        //        var sb = new StringBuilder();
-        //        byte len;
-
-        //        while ((len = NextByte) != 0)
-        //        {
-        //            if ((len & 0xc0) == 0xc0) //Compression
-        //            {
-        //                var subReader = new ByteReader(RawMessage, (len & 0x3f) | NextByte);
-        //                sb.Append(subReader.ReadLabels);
-        //                return sb.ToString();
-        //            }
-
-        //            for (var ndx = len; ndx > 0; --ndx)
-        //                sb.Append((char)NextByte);
-        //            sb.Append('.');
-        //        }
-
-        //        return sb.ToString();
-        //    }
-        //}
 
         public string ReadLabels()
         {
@@ -111,20 +71,6 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
             return sb.ToString();
         }
 
-        //public string ReadText
-        //{
-        //    get
-        //    {
-        //        var len = NextByte;
-        //        var sb = new StringBuilder();
-
-        //        for (var ndx = 0; ndx < len; ++ndx)
-        //            sb.Append((char) NextByte);
-
-        //        return sb.ToString();
-        //    }
-        //}
-
         public string ReadText()
         {
             var len = NextByte();
@@ -136,19 +82,6 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
             return sb.ToString();
         }
 
-
-        //public ushort ReadUShort
-        //{
-        //    get
-        //    {
-        //        var result = RawMessage.Skip(Position)
-        //                                .Take(2)
-        //                                .ToLeUShort();
-        //        Position += 2;
-        //        return result;
-        //    }
-        //}
-
         public ushort ReadUShort()
         {
             var result = RawMessage.Skip(Position)
@@ -158,18 +91,6 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
             return result;
         }
 
-        //public uint ReadUInt
-        //{
-        //    get
-        //    {
-        //        var result = RawMessage.Skip(Position)
-        //                               .Take(4)
-        //                               .ToLeUInt();
-        //        Position += 4;
-        //        return result;
-        //    }
-        //}
-
         public uint ReadUInt()
         {
             var result = RawMessage.Skip(Position)
@@ -178,8 +99,6 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
             Position += 4;
             return result;
         }
-
-        
 
         public IEnumerable<byte> GetRdata(ushort len)
         {
