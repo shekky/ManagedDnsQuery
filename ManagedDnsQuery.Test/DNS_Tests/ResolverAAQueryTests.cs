@@ -82,7 +82,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             //Test Caching
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
-                .Returns(new DNS.MessageingImplementations.Message());
+                .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToACollection().ToArray();
             actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
@@ -133,7 +133,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             //Test Caching
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
-                .Returns(new DNS.MessageingImplementations.Message());
+                .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToMxCollection().ToArray();
             actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
@@ -165,7 +165,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             //Test Caching
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
-                .Returns(new DNS.MessageingImplementations.Message());
+                .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToCNameCollection().ToArray();
             actual = resolver.AuthoratativeQuery("www.yahoo.com", "yahoo.com", RecordType.CNameRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
@@ -245,7 +245,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             //Test Caching
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
-                .Returns(new DNS.MessageingImplementations.Message());
+                .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToNsCollection().ToArray();
             actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.NsRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
@@ -258,7 +258,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             var mockedTransport = new Mock<IDnsTransport>();
 
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
-                .Returns((IMessage mes, IPEndPoint srv, int timeout) => new DNS.MessageingImplementations.Message(dnsData[mes.Questions.FirstOrDefault().ToBytes().ToByteString()]));
+                .Returns((IMessage mes, IPEndPoint srv, int timeout) => new DNS.MessageingConcretes.Message(dnsData[mes.Questions.FirstOrDefault().ToBytes().ToByteString()]));
 
             return mockedTransport;
         }

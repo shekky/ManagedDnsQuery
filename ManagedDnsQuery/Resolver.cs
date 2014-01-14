@@ -25,7 +25,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using ManagedDnsQuery.DNS;
-using ManagedDnsQuery.DNS.MessageingImplementations;
+using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
 namespace ManagedDnsQuery

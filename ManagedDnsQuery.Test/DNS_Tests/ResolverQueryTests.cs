@@ -22,7 +22,7 @@
 using System.Collections.Generic;
 using System.Net;
 using ManagedDnsQuery.DNS;
-using ManagedDnsQuery.DNS.MessageingImplementations;
+using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

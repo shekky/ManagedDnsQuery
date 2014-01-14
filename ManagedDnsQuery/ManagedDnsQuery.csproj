@@ -65,11 +65,11 @@
     <Compile Include="DNS\ExternalInterfaces\ISoaRecord.cs" />
     <Compile Include="DNS\ExternalInterfaces\ITxtRecord.cs" />
     <Compile Include="DNS\IDnsTransport.cs" />
-    <Compile Include="DNS\MessageingImplementations\ByteReader.cs" />
-    <Compile Include="DNS\MessageingImplementations\Header.cs" />
-    <Compile Include="DNS\MessageingImplementations\Message.cs" />
-    <Compile Include="DNS\MessageingImplementations\Question.cs" />
-    <Compile Include="DNS\MessageingImplementations\ResourceRecord.cs" />
+    <Compile Include="DNS\MessageingConcretes\ByteReader.cs" />
+    <Compile Include="DNS\MessageingConcretes\Header.cs" />
+    <Compile Include="DNS\MessageingConcretes\Message.cs" />
+    <Compile Include="DNS\MessageingConcretes\Question.cs" />
+    <Compile Include="DNS\MessageingConcretes\ResourceRecord.cs" />
     <Compile Include="DNS\MessageingInterfaces\IByteConverter.cs" />
     <Compile Include="DNS\MessageingInterfaces\IByteReader.cs" />
     <Compile Include="DNS\MessageingInterfaces\IConvertToExternal.cs" />

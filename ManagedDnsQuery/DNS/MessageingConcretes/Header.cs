@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
-namespace ManagedDnsQuery.DNS.MessageingImplementations
+namespace ManagedDnsQuery.DNS.MessageingConcretes
 {
     internal sealed class Header : IHeader
     {

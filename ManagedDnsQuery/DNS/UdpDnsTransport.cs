@@ -23,7 +23,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using ManagedDnsQuery.DNS.MessageingImplementations;
+using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
 namespace ManagedDnsQuery.DNS

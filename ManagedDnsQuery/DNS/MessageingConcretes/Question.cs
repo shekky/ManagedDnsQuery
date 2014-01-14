@@ -22,7 +22,7 @@
 using System.Collections.Generic;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
-namespace ManagedDnsQuery.DNS.MessageingImplementations
+namespace ManagedDnsQuery.DNS.MessageingConcretes
 {
     internal class Question : IQuestion
     {

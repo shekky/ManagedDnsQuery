@@ -21,7 +21,7 @@
 
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.ExternalConcretes;
-using ManagedDnsQuery.DNS.MessageingImplementations;
+using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -61,7 +61,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                };
 
             IByteReader reader = new ByteReader(response);
-            new DNS.MessageingImplementations.Question(reader); //Just to advance the position
+            new DNS.MessageingConcretes.Question(reader); //Just to advance the position
 
             var expectedRr = new ResourceRecord(null)
                                  {

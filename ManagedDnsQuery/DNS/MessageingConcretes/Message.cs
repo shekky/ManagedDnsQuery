@@ -29,7 +29,7 @@ using ManagedDnsQuery.DNS.MessageingInterfaces;
 [assembly: InternalsVisibleTo("ManagedDnsQuery.Test")]
 #endif
 
-namespace ManagedDnsQuery.DNS.MessageingImplementations
+namespace ManagedDnsQuery.DNS.MessageingConcretes
 {
     internal class Message : IMessage
     {

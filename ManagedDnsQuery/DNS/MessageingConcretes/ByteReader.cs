@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
-namespace ManagedDnsQuery.DNS.MessageingImplementations
+namespace ManagedDnsQuery.DNS.MessageingConcretes
 {
     internal class ByteReader : IByteReader
     {

@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ManagedDnsQuery.DNS;
-using ManagedDnsQuery.DNS.MessageingImplementations;
+using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 using ManagedDnsQuery.DNS.RDataConcretes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
