@@ -19,7 +19,6 @@
  ==================================================================================
  **********************************************************************************/
 
-using System.Collections.Generic;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
 namespace ManagedDnsQuery

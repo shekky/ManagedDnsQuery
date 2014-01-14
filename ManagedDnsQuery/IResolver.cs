@@ -20,6 +20,7 @@
  **********************************************************************************/
 
 using System.Net;
+using System.Threading.Tasks;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.ExternalInterfaces;
 
@@ -34,6 +35,8 @@ namespace ManagedDnsQuery
 
         IQueryCache Cache { get; }
         IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
+        Task<IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
         IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
+        Task<IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
     }
 }

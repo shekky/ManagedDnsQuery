@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.MessageingImplementations;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
@@ -116,6 +117,16 @@ namespace ManagedDnsQuery
 
             var arecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.ARecord;
             return arecord == null ? null : Query(name, queryType, new IPEndPoint(arecord.Address, 53), rClass);
+        }
+
+        public async Task<DNS.ExternalInterfaces.IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        {
+            return await Task.Factory.StartNew(() => Query(name, queryType, dnsServer, rClass));
+        }
+
+        public async Task<DNS.ExternalInterfaces.IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        {
+            return await Task.Factory.StartNew(() => AuthoratativeQuery(name, domain, queryType, dnsServer, rClass));
         }
     }
 }
