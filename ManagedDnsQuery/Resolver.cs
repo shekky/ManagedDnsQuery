@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
+using ManagedDnsQuery.WHOIS.Concretes;
+using ManagedDnsQuery.WHOIS.Interfaces;
 
 namespace ManagedDnsQuery
 {
@@ -36,6 +38,8 @@ namespace ManagedDnsQuery
         public int TimeOut { get; set; }
         public int Retries { get; set; }
         public IDnsTransport Transport { get; private set; }
+        public IWhoisTransport WhoisTransport { get; private set; }
+        public ITLDHandler TldHandler { get; private set; }
         public IQueryCache Cache { get; private set; }
         
         public Resolver()
@@ -45,15 +49,19 @@ namespace ManagedDnsQuery
             Retries = 3;
             TimeOut = 60;
             UseRecursion = true;
+            WhoisTransport = new WhoisTcpTransport();
+            TldHandler = new TldHandler();
         }
 
-        public Resolver(IDnsTransport transport, IQueryCache cache = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
+        public Resolver(IDnsTransport transport, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
         {
             Transport = transport;
             Retries = retrys;
             TimeOut = timeout;
             UseRecursion = useRecursion;
             Cache = (cache ?? new QueryCache());
+            WhoisTransport = (wtransport?? new WhoisTcpTransport());
+            TldHandler = (tldHandler?? new TldHandler());
         }
 
         public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
@@ -127,6 +135,23 @@ namespace ManagedDnsQuery
         public async Task<DNS.ExternalInterfaces.IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
         {
             return await Task.Factory.StartNew(() => AuthoratativeQuery(name, domain, queryType, dnsServer, rClass));
+        }
+
+        public string QueryWhois(string domainName)
+        {
+            domainName = domainName.Trim().Replace("http://", "").Replace("https://", "");
+            var firstResult = WhoisTransport.RunWhoisQuery(domainName, TldHandler.GetTldServer(domainName));
+
+            if(string.IsNullOrEmpty(firstResult))
+                return string.Empty;
+
+            var secondResult = WhoisTransport.RunWhoisQuery(domainName, TldHandler.GetWhoisServer(firstResult));
+            return !string.IsNullOrEmpty(secondResult) ? secondResult : firstResult;
+        }
+
+        public async Task<string> QueryWhoisAsync(string domainName)
+        {
+            return await Task.Factory.StartNew(() => QueryWhois(domainName));
         }
     }
 }

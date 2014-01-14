@@ -19,29 +19,47 @@
  ==================================================================================
  **********************************************************************************/
 
-using System.Net;
-using System.Threading.Tasks;
-using ManagedDnsQuery.DNS;
-using ManagedDnsQuery.DNS.ExternalInterfaces;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using ManagedDnsQuery.WHOIS.Interfaces;
 
-namespace ManagedDnsQuery
+namespace ManagedDnsQuery.WHOIS.Concretes
 {
-    public interface IResolver
+    internal class TldHandler : ITLDHandler
     {
-        bool UseRecursion { get; set; }
-        int TimeOut { get; set; }
-        int Retries { get; set; }
-        IDnsTransport Transport { get; }
-        IWhoisTransport WhoisTransport { get; }
-        ITLDHandler TldHandler { get; }
-        IQueryCache Cache { get; }
+        public ITLDParser Parser { get; private set; }
+        public IDictionary<string, string> Map { get; private set; }
 
-        IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        Task<IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        Task<IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        string QueryWhois(string domainName);
-        Task<string> QueryWhoisAsync(string domainName);
+        public TldHandler()
+        {
+            Parser = new TldParser();
+        }
+
+        public TldHandler(ITLDParser parser)
+        {
+            Parser = parser;
+        }
+
+        public string GetTldServer(string domain)
+        {
+            if (Map == null || !Map.Any())
+                Map = Parser.Parse(string.Format(@"{0}\TLD_List.txt", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
+
+            var peices = domain.Trim().Split('.');
+            if (!peices.Any())
+                return null;
+
+            var value = string.Empty;
+            Map.TryGetValue(peices.LastOrDefault(), out value);
+
+            return value;
+        }
+
+        public string GetWhoisServer(string firstResult)
+        {
+            return Parser.ParseWhoisServer(firstResult);
+        }
     }
 }

@@ -19,29 +19,45 @@
  ==================================================================================
  **********************************************************************************/
 
-using System.Net;
-using System.Threading.Tasks;
-using ManagedDnsQuery.DNS;
-using ManagedDnsQuery.DNS.ExternalInterfaces;
+using System;
+using System.IO;
+using System.Net.Sockets;
+using System.Text;
 using ManagedDnsQuery.WHOIS.Interfaces;
 
-namespace ManagedDnsQuery
+namespace ManagedDnsQuery.WHOIS.Concretes
 {
-    public interface IResolver
+    internal class WhoisTcpTransport : IWhoisTransport
     {
-        bool UseRecursion { get; set; }
-        int TimeOut { get; set; }
-        int Retries { get; set; }
-        IDnsTransport Transport { get; }
-        IWhoisTransport WhoisTransport { get; }
-        ITLDHandler TldHandler { get; }
-        IQueryCache Cache { get; }
+        public string RunWhoisQuery(string domain, string whoisServer)
+        {
+            var sb = new StringBuilder();
+            try
+            {
+                var tcpClient = new TcpClient(whoisServer.Trim(), 43);
+                var netStream = tcpClient.GetStream();
 
-        IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        Task<IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        Task<IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        string QueryWhois(string domainName);
-        Task<string> QueryWhoisAsync(string domainName);
+                using (var bufferedStream = new BufferedStream(netStream))
+                {
+                    var sw = new StreamWriter(bufferedStream);
+                    sw.WriteLine(domain);
+                    sw.Flush();
+
+                    var sr = new StreamReader(bufferedStream);
+                    while (!sr.EndOfStream)
+                    {
+                        var line = sr.ReadLine();
+                        sb.AppendLine(line);
+                    }
+
+                }
+            }
+            catch (Exception)
+            {
+                sb = new StringBuilder();
+            }
+
+            return sb.ToString();
+        }
     }
 }

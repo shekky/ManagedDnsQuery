@@ -94,12 +94,19 @@
     <Compile Include="DNS\ToLittleEndianExtensions.cs" />
     <Compile Include="QueryCache.cs" />
     <Compile Include="Resolver.cs" />
+    <Compile Include="WHOIS\Concretes\TldHandler.cs" />
+    <Compile Include="WHOIS\Concretes\TldParser.cs" />
+    <Compile Include="WHOIS\Concretes\WhoisTcpTransport.cs" />
+    <Compile Include="WHOIS\Interfaces\IWhoisTransport.cs" />
+    <Compile Include="WHOIS\Interfaces\ITLDHandler.cs" />
+    <Compile Include="WHOIS\Interfaces\ITLDParser.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="WHOIS\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="WHOIS\TLD_List.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
