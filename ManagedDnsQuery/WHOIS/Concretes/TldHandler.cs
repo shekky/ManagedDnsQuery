@@ -47,7 +47,7 @@ namespace ManagedDnsQuery.WHOIS.Concretes
             if (Map == null || !Map.Any())
                 Map = Parser.Parse(string.Format(@"{0}\TLD_List.txt", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
 
-            var peices = domain.Trim().Split('.');
+            var peices = domain.ToLower().Trim().Split('.');
             if (!peices.Any())
                 return null;
 
