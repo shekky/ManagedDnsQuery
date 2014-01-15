@@ -38,7 +38,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
         public void TestWhoisQuery()
         {
             var transport = GetMockedWhoisTransport();
-            var parser = GetMockedITLDParser();
+            var parser = GetMockedItldParser();
 
             IResolver resolver = new Resolver(null, null, transport.Object, new TldHandler(parser.Object));
             var result = resolver.QueryWhois("google.com");
@@ -52,7 +52,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             Assert.AreEqual(FirstPassString, result, "Should be equal");
         }
 
-        private Mock<IWhoisTransport> GetMockedWhoisTransport()
+        private static Mock<IWhoisTransport> GetMockedWhoisTransport()
         {
             var transport = new Mock<IWhoisTransport>();
 
@@ -62,7 +62,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             return transport;
         }
 
-        private Mock<ITLDParser> GetMockedITLDParser()
+        private static Mock<ITLDParser> GetMockedItldParser()
         {
             var parser = new Mock<ITLDParser>();
 
@@ -78,7 +78,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             return parser;
         }
 
-        private string GetTestWhoisData(string domain, string srv)
+        private static string GetTestWhoisData(string domain, string srv)
         {
             var datas = new []
                 {
@@ -106,7 +106,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             return temp != null ? temp.data : null;
         }
 
-        private string GetTestWhoisServer(string firstResult)
+        private static string GetTestWhoisServer(string firstResult)
         {
             var pairs = new Dictionary<string, string>
                             {
