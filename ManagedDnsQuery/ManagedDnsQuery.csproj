@@ -94,6 +94,10 @@
     <Compile Include="DNS\ToLittleEndianExtensions.cs" />
     <Compile Include="QueryCache.cs" />
     <Compile Include="Resolver.cs" />
+    <Compile Include="SPF\Concretes\Ipv4NetworkParser.cs" />
+    <Compile Include="SPF\Concretes\NetworkDetails.cs" />
+    <Compile Include="SPF\Interfaces\INetworkDetails.cs" />
+    <Compile Include="SPF\Interfaces\INetworkParser.cs" />
     <Compile Include="WHOIS\Concretes\TldHandler.cs" />
     <Compile Include="WHOIS\Concretes\TldParser.cs" />
     <Compile Include="WHOIS\Concretes\WhoisTcpTransport.cs" />
