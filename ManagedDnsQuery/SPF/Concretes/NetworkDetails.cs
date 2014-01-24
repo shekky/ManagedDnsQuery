@@ -22,6 +22,8 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
+using System.Numerics;
 using ManagedDnsQuery.SPF.Interfaces;
 
 namespace ManagedDnsQuery.SPF.Concretes
@@ -44,11 +46,25 @@ namespace ManagedDnsQuery.SPF.Concretes
         /// <returns>bool Is In Range</returns>
         public bool IsInRangeUsable(IPAddress address)
         {
-            var start = IpAddressToUint(UsableStartAddress);
-            var end = IpAddressToUint(UsableEndAddress);
-            var current = IpAddressToUint(address);
+            var result = false;
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                var start = IpAddressToUint(UsableStartAddress);
+                var end = IpAddressToUint(UsableEndAddress);
+                var current = IpAddressToUint(address);
 
-            return current >= start && current <= end;
+                result = current >= start && current <= end;
+            }
+            else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                var start = IpAddressToBigInt(UsableStartAddress);
+                var end = IpAddressToBigInt(UsableEndAddress);
+                var current = IpAddressToBigInt(address);
+
+                result = current >= start && current <= end;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -59,11 +75,33 @@ namespace ManagedDnsQuery.SPF.Concretes
         /// <returns>bool Is In Range</returns>
         public bool IsInRange(IPAddress address)
         {
-            var start = IpAddressToUint(NetworkAddress);
-            var end = IpAddressToUint(BroadcastAddress);
-            var current = IpAddressToUint(address);
+            var result = false;
+            if(address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                var start = IpAddressToUint(NetworkAddress);
+                var end = IpAddressToUint(BroadcastAddress);
+                var current = IpAddressToUint(address);
 
-            return current >= start && current <= end;
+                result = current >= start && current <= end;
+            }
+            else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                var start = IpAddressToBigInt(NetworkAddress);
+                var end = IpAddressToBigInt(BroadcastAddress);
+                var current = IpAddressToBigInt(address);
+
+                result = current >= start && current <= end;
+            }
+
+            return result;
+        }
+
+        private static BigInteger IpAddressToBigInt(IPAddress address)
+        {
+            var bytes = address.GetAddressBytes();
+            var big = new BigInteger(bytes);
+
+            return big;
         }
 
         private static uint IpAddressToUint(IPAddress address)

@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -94,7 +95,7 @@
     <Compile Include="DNS\ToLittleEndianExtensions.cs" />
     <Compile Include="QueryCache.cs" />
     <Compile Include="Resolver.cs" />
-    <Compile Include="SPF\Concretes\Ipv4NetworkParser.cs" />
+    <Compile Include="SPF\Concretes\NetworkParser.cs" />
     <Compile Include="SPF\Concretes\NetworkDetails.cs" />
     <Compile Include="SPF\Interfaces\INetworkDetails.cs" />
     <Compile Include="SPF\Interfaces\INetworkParser.cs" />

@@ -29,7 +29,7 @@ using ManagedDnsQuery.SPF.Interfaces;
 
 namespace ManagedDnsQuery.SPF.Concretes
 {
-    internal sealed class Ipv4NetworkParser : INetworkParser
+    internal sealed class NetworkParser : INetworkParser
     {
         public INetworkDetails ParseRange(string range)
         {
@@ -44,64 +44,98 @@ namespace ManagedDnsQuery.SPF.Concretes
             if (!IPAddress.TryParse(addressPeices.FirstOrDefault().Trim(), out ip))
                 throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is not a valid Ip Address.", addressPeices.FirstOrDefault().Trim()));
 
-            var maskLength = 0;
+            var maskLength = -1;
             if (!int.TryParse(addressPeices.Skip(1).FirstOrDefault().Trim(), out maskLength))
                 throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is not a valid Subnet Mask Length.", addressPeices.Skip(1).FirstOrDefault().Trim()));
 
-            if(ip.AddressFamily != AddressFamily.InterNetwork)
-                throw new ArgumentException(string.Format("Invalid IPAddress type: {0}, was expecting IPV4.", ip.AddressFamily));
+            if(ip.AddressFamily != AddressFamily.InterNetwork && ip.AddressFamily != AddressFamily.InterNetworkV6)
+                throw new ArgumentException(string.Format("Invalid IPAddress type: {0}, was expecting IPV4 or IPV6", ip.AddressFamily));
 
-            return ParseIpv4Range(ip, maskLength);
-        }
-
-        private INetworkDetails ParseIpv4Range(IPAddress ip, int maskLength)
-        {
             var rawIpBytes = ip.GetAddressBytes();
-            var rawMaskBytes = GetIpv4SubnetMask(maskLength).ToArray();
+            var rawMaskBytes = GetSubnetMask(maskLength, ip.AddressFamily == AddressFamily.InterNetwork).ToArray();
 
-            var rangeStart = new byte[4];
-            var rangeEnd = new byte[4];
-            for (var ndx = 0; ndx < 4; ++ndx)
+            var rangeStart = new byte[rawIpBytes.Length];
+            var rangeEnd = new byte[rawIpBytes.Length];
+
+            for (var ndx = 0; ndx < rawIpBytes.Length; ++ndx)
             {
                 rangeStart[ndx] = (byte)(rawIpBytes[ndx] & rawMaskBytes[ndx]);
                 rangeEnd[ndx] = (byte)(rawIpBytes[ndx] | ~rawMaskBytes[ndx]);
             }
 
+            var hostsCount = Math.Pow(2, ((rawIpBytes.Length == 4 ? 32 : 128) - maskLength));
             return new NetworkDetails
-                            {
-                                NetworkAddress = new IPAddress(rangeStart),
-                                BroadcastAddress = new IPAddress(rangeEnd),
-                                SubNetMask = new IPAddress(rawMaskBytes),
-                                MaxHosts = (int)Math.Pow(2, (32 - maskLength)),
-                                MaxUsableHosts = (int)Math.Pow(2, (32 - maskLength)) - 2,
-
-                                UsableStartAddress = IPAddress.Parse(string.Format("{0}.{1}.{2}.{3}",
-                                                                         rangeStart.FirstOrDefault(),
-                                                                         rangeStart.Skip(1).FirstOrDefault(),
-                                                                         rangeStart.Skip(2).FirstOrDefault(),
-                                                                         rangeStart.Skip(3).FirstOrDefault())),
-
-                                UsableEndAddress = IPAddress.Parse(string.Format("{0}.{1}.{2}.{3}",
-                                                                         rangeEnd.FirstOrDefault(),
-                                                                         rangeEnd.Skip(1).FirstOrDefault(),
-                                                                         rangeEnd.Skip(2).FirstOrDefault(),
-                                                                         rangeEnd.Skip(3).FirstOrDefault())),
-                            };
+                        {
+                            NetworkAddress = new IPAddress(rangeStart),
+                            BroadcastAddress = new IPAddress(rangeEnd),
+                            SubNetMask = new IPAddress(rawMaskBytes),
+                            MaxHosts = (int)hostsCount,
+                            MaxUsableHosts = (int)hostsCount - 2,
+                            UsableStartAddress = IncrementByOne(new IPAddress(rangeStart)),
+                            UsableEndAddress = DecrementByOne(new IPAddress(rangeEnd)),
+                        };
         }
 
-        private IEnumerable<byte> GetIpv4SubnetMask(int ones)
+        private static IEnumerable<byte> GetSubnetMask(int ones, bool ipv4 = true)
         {
-            var bits = new BitArray(32);
-            bits.SetAll(true);
+            var zeros = 0;
+            BitArray bits = null;
 
-            var zeros = 32 - ones;
+            if(ipv4)
+            {
+                zeros = 32 - ones;
+                bits = new BitArray(32);
+            }
+            else
+            {
+                zeros = 128 - ones;
+                bits = new BitArray(128);
+            }
+
+            bits.SetAll(true);
             for (var ndx = 0; ndx < zeros; ++ndx)
                 bits[ndx] = false;
 
-            var bytes = new byte[4];
+            var bytes = new byte[bits.Length / 8];
             bits.CopyTo(bytes, 0);
 
             return BitConverter.IsLittleEndian ? bytes.Reverse() : bytes;
+        }
+
+        private static IPAddress IncrementByOne(IPAddress address)
+        {
+            var bytes = address.GetAddressBytes();
+            if(bytes.Length != 4 && bytes.Length != 16)
+                throw new ArgumentException("Not a valid IP Address");
+            
+            for (var ndx = (bytes.Length -1); ndx > -1; --ndx)
+            {
+                if (bytes[ndx] < 255)
+                {
+                    bytes[ndx] += 1;
+                    break;
+                }
+            }
+            
+            return new IPAddress(bytes);
+        }
+
+        private static IPAddress DecrementByOne(IPAddress address)
+        {
+            var bytes = address.GetAddressBytes();
+            if (bytes.Length != 4 && bytes.Length != 16)
+                throw new ArgumentException("Not a valid IP Address");
+
+            for (var ndx = (bytes.Length - 1); ndx > -1; --ndx)
+            {
+                if (bytes[ndx] > 0)
+                {
+                    bytes[ndx] -= 1;
+                    break;
+                }
+            }
+
+            return new IPAddress(bytes);
         }
     }
 }

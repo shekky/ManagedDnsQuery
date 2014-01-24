@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 using ManagedDnsQuery.DNS.RDataConcretes;
+using ManagedDnsQuery.SPF.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ManagedDnsQuery.Test
@@ -444,6 +445,29 @@ namespace ManagedDnsQuery.Test
             Assert.AreEqual(expected.AsString, actual.AsString, "Should be equal");
 
             Assert.AreEqual(expected.Text, actual.Text, "Should be equal");
+        }
+
+        internal virtual void AssertEquality(IEnumerable<INetworkDetails> expected, IEnumerable<INetworkDetails> actual)
+        {
+            AssertEquality(expected.ToArray(), actual.ToArray());
+        }
+
+        internal virtual void AssertEquality(IList<INetworkDetails> expected, IList<INetworkDetails> actual)
+        {
+            Assert.AreEqual(expected.Count, actual.Count, "Should be equal");
+            for (var ndx = 0; ndx < actual.Count; ++ndx)
+                AssertEquality(expected[ndx], actual[ndx]);
+        }
+
+        internal virtual void AssertEquality(INetworkDetails expected, INetworkDetails actual)
+        {
+            Assert.AreEqual(expected.BroadcastAddress, actual.BroadcastAddress, "Should be equal");
+            Assert.AreEqual(expected.NetworkAddress, actual.NetworkAddress, "Should be equal");
+            Assert.AreEqual(expected.SubNetMask, actual.SubNetMask, "Should be equal");
+            Assert.AreEqual(expected.UsableEndAddress, actual.UsableEndAddress, "Should be equal");
+            Assert.AreEqual(expected.UsableStartAddress, actual.UsableStartAddress, "Should be equal");
+            Assert.AreEqual(expected.MaxHosts, actual.MaxHosts, "Should be equal");
+            Assert.AreEqual(expected.MaxUsableHosts, actual.MaxUsableHosts, "Should be equal");
         }
     }
 }

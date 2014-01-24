@@ -75,6 +75,7 @@
     <Compile Include="DNS_Tests\MessageTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DNS_Tests\QuestionTests.cs" />
+    <Compile Include="SPF\IpRangeTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
