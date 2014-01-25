@@ -46,7 +46,7 @@ namespace ManagedDnsQuery.WHOIS.Concretes
                 string line = null;
                 while ((line = sr.ReadLine()) != null)
                 {
-                    if(line.Trim().Substring(0,1) == ";")
+                    if(line.TryTrim().TrySubstring(0,1) == ";")
                         continue; //Skip Comments
 
                     var peices = line.Split('=');
@@ -63,11 +63,11 @@ namespace ManagedDnsQuery.WHOIS.Concretes
         {
             var server = string.Empty;
 
-            var lines = firstResult.Trim().Replace("\r", "").Split('\n');
-            if (lines.Any() && string.Equals(lines.FirstOrDefault().Trim(), "whois server version 2.0", StringComparison.CurrentCultureIgnoreCase))
-                foreach (var line in lines.Where(line => line.Trim().ToLower().Contains("whois server:")))
+            var lines = firstResult.TryTrim().Replace("\r", "").Split('\n');
+            if (lines.Any() && string.Equals(lines.FirstOrDefault().TryTrim(), "whois server version 2.0", StringComparison.CurrentCultureIgnoreCase))
+                foreach (var line in lines.Where(line => line.TryTrim().TryToLower().Contains("whois server:")))
                 {
-                    server = line.ToLower().Trim().Replace("whois server:", "");
+                    server = line.TryToLower().TryTrim().Replace("whois server:", "");
                     break;
                 }
 

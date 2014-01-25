@@ -39,7 +39,7 @@ namespace ManagedDnsQuery.WHOIS.Concretes
             var sb = new StringBuilder();
             try
             {
-                var tcpClient = new TcpClient(whoisServer.Trim(), 43);
+                var tcpClient = new TcpClient(whoisServer.TryTrim(), 43);
                 var netStream = tcpClient.GetStream();
 
                 using (var bufferedStream = new BufferedStream(netStream))

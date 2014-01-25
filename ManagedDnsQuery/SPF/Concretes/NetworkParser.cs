@@ -46,12 +46,12 @@ namespace ManagedDnsQuery.SPF.Concretes
                 throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is invalid.", range));
 
             IPAddress ip = null;
-            if (!IPAddress.TryParse(addressPeices.FirstOrDefault().Trim(), out ip))
-                throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is not a valid Ip Address.", addressPeices.FirstOrDefault().Trim()));
+            if (!IPAddress.TryParse(addressPeices.FirstOrDefault().TryTrim(), out ip))
+                throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is not a valid Ip Address.", addressPeices.FirstOrDefault().TryTrim()));
 
             var maskLength = -1;
-            if (!int.TryParse(addressPeices.Skip(1).FirstOrDefault().Trim(), out maskLength))
-                throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is not a valid Subnet Mask Length.", addressPeices.Skip(1).FirstOrDefault().Trim()));
+            if (!int.TryParse(addressPeices.Skip(1).FirstOrDefault().TryTrim(), out maskLength))
+                throw new ArgumentException(string.Format("Range not formatted correctly. Expecting \"127.0.0.1 /32\" format. '{0}' is not a valid Subnet Mask Length.", addressPeices.Skip(1).FirstOrDefault().TryTrim()));
 
             if(ip.AddressFamily != AddressFamily.InterNetwork && ip.AddressFamily != AddressFamily.InterNetworkV6)
                 throw new ArgumentException(string.Format("Invalid IPAddress type: {0}, was expecting IPV4 or IPV6", ip.AddressFamily));

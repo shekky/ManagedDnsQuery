@@ -101,6 +101,7 @@
     <Compile Include="SPF\Interfaces\INetworkDetails.cs" />
     <Compile Include="SPF\Interfaces\INetworkParser.cs" />
     <Compile Include="SPF\Interfaces\ISpfChecker.cs" />
+    <Compile Include="StringExtensions.cs" />
     <Compile Include="WHOIS\Concretes\TldHandler.cs" />
     <Compile Include="WHOIS\Concretes\TldParser.cs" />
     <Compile Include="WHOIS\Concretes\WhoisTcpTransport.cs" />

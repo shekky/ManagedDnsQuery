@@ -60,8 +60,8 @@ namespace ManagedDnsQuery.DNS.ExternalConcretes
                 return string.Format("{0}     {1}     {2}     {3}     \"{4}\"",
                                         Name,
                                         Ttl,
-                                        Class.ToString().ToUpper(),
-                                        Type.ToString().ToUpper().Replace("RECORD", ""),
+                                        Class.ToString().TryToUpper(),
+                                        Type.ToString().TryToUpper().Replace("RECORD", ""),
                                         Text);
             }
         }
