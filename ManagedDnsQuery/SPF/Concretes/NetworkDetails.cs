@@ -1,28 +1,32 @@
 ﻿/**********************************************************************************
  ==================================================================================
-    Copyright 2013 Tim Burnett 
-    
-    This file is part of ManagedDnsQuery.
+The MIT License (MIT)
 
-    ManagedDnsQuery is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+Copyright (c) 2013 Tim Burnett
 
-    ManagedDnsQuery is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with ManagedDnsQuery.  If not, see <http://www.gnu.org/licenses/>.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
  ==================================================================================
  **********************************************************************************/
 
 using System;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Numerics;
 using ManagedDnsQuery.SPF.Interfaces;
 
@@ -46,25 +50,11 @@ namespace ManagedDnsQuery.SPF.Concretes
         /// <returns>bool Is In Range</returns>
         public bool IsInRangeUsable(IPAddress address)
         {
-            var result = false;
-            if (address.AddressFamily == AddressFamily.InterNetwork)
-            {
-                var start = IpAddressToUint(UsableStartAddress);
-                var end = IpAddressToUint(UsableEndAddress);
-                var current = IpAddressToUint(address);
+            var start = IpAddressToBigInt(UsableStartAddress);
+            var end = IpAddressToBigInt(UsableEndAddress);
+            var current = IpAddressToBigInt(address);
 
-                result = current >= start && current <= end;
-            }
-            else if (address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                var start = IpAddressToBigInt(UsableStartAddress);
-                var end = IpAddressToBigInt(UsableEndAddress);
-                var current = IpAddressToBigInt(address);
-
-                result = current >= start && current <= end;
-            }
-
-            return result;
+            return current >= start && current <= end;
         }
 
         /// <summary>
@@ -75,44 +65,20 @@ namespace ManagedDnsQuery.SPF.Concretes
         /// <returns>bool Is In Range</returns>
         public bool IsInRange(IPAddress address)
         {
-            var result = false;
-            if(address.AddressFamily == AddressFamily.InterNetwork)
-            {
-                var start = IpAddressToUint(NetworkAddress);
-                var end = IpAddressToUint(BroadcastAddress);
-                var current = IpAddressToUint(address);
+            var start = IpAddressToBigInt(NetworkAddress);
+            var end = IpAddressToBigInt(BroadcastAddress);
+            var current = IpAddressToBigInt(address);
 
-                result = current >= start && current <= end;
-            }
-            else if (address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                var start = IpAddressToBigInt(NetworkAddress);
-                var end = IpAddressToBigInt(BroadcastAddress);
-                var current = IpAddressToBigInt(address);
-
-                result = current >= start && current <= end;
-            }
-
-            return result;
+            return current >= start && current <= end;
         }
 
         private static BigInteger IpAddressToBigInt(IPAddress address)
         {
-            var bytes = address.GetAddressBytes();
-            var big = new BigInteger(bytes);
+            var bytes = address.GetAddressBytes().Reverse().ToArray();
+            var uintBytes = new byte[bytes.Length + 1];
+            Array.Copy(bytes, uintBytes, bytes.Length);
 
-            return big;
-        }
-
-        private static uint IpAddressToUint(IPAddress address)
-        {
-            var bytes = address.GetAddressBytes();
-            var ip = Convert.ToUInt32(bytes.Skip(0).Take(1).First()) << 24;
-            ip += Convert.ToUInt32(bytes.Skip(1).Take(1).First()) << 16;
-            ip += Convert.ToUInt32(bytes.Skip(2).Take(1).First()) << 8;
-            ip += Convert.ToUInt32(bytes.Skip(3).Take(1).First());
-
-            return ip;
+            return new BigInteger(uintBytes);
         }
     }
 }
