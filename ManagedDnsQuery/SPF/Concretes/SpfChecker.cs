@@ -24,15 +24,59 @@ THE SOFTWARE.
  ==================================================================================
  **********************************************************************************/
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using ManagedDnsQuery.SPF.Interfaces;
 
 namespace ManagedDnsQuery.SPF.Concretes
 {
     internal class SpfChecker : ISpfChecker
     {
-        public SpfResult VerifySpfRecord(string domain, string ip)
+        private INetworkParser Parser { get; set; }
+
+        public SpfChecker()
         {
-            return SpfResult.NoResult;
+            Parser = new NetworkParser();
+        }
+
+        public SpfChecker(INetworkParser parser)
+        {
+            Parser = parser;
+        }
+
+        public SpfResult VerifyIpMechanism(IPAddress sender, string ipSpfText)
+        {
+            if (ipSpfText.Contains("/"))
+            {
+                var range = ipSpfText.Split(':').Skip(1).FirstOrDefault();
+                INetworkDetails details = Parser.ParseRange(range);
+
+                if (!details.IsInRange(sender))
+                    return SpfResult.Fail;
+            }
+            else
+            {
+                if (!sender.Equals(IPAddress.Parse(ipSpfText.Split(':').Skip(1).FirstOrDefault())))
+                    return SpfResult.Fail;
+            }
+
+            return SpfResult.Pass;
+        }
+
+        public SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public SpfResult VerifyPtrMechanism(IPAddress sender, IEnumerable<IPAddress> ptrRecordAddresses)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
