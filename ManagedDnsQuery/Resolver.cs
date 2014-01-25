@@ -49,6 +49,8 @@ namespace ManagedDnsQuery
         private ITLDHandler TldHandler { get; set; }
         private IQueryCache Cache { get; set; }
         private ISpfChecker SpfChecker { get; set; }
+        private readonly IPEndPoint _defaultServer1 = new IPEndPoint(IPAddress.Parse(""), 53);
+        private readonly IPEndPoint _defaultServer2 = new IPEndPoint(IPAddress.Parse(""), 53);
 
         public Resolver()
         {
@@ -74,10 +76,13 @@ namespace ManagedDnsQuery
             TldHandler = (tldHandler?? new TldHandler());
         }
 
-        public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
         {
-            if (!string.IsNullOrEmpty(name) && name.Substring(name.Length - 1) != ".")
+            if (!string.IsNullOrEmpty(name) && name.TrySubstring(name.Length - 1) != ".")
                 name = string.Format("{0}.", name);
+
+            if (dnsServer == null)
+                dnsServer = _defaultServer1;
 
             IMessage request = new Message
                                    {
@@ -119,8 +124,11 @@ namespace ManagedDnsQuery
             return result != null ? result.GetExternalAnswer() : null;
         }
 
-        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
         {
+            if (dnsServer == null)
+                dnsServer = _defaultServer1;
+
             var auth = Query(domain, RecordType.SoaRecord, dnsServer, rClass);
             if (auth.Answers == null || !auth.Answers.Any())
                 return null;
@@ -134,22 +142,35 @@ namespace ManagedDnsQuery
                 return null;
 
             var arecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.ARecord;
-            return arecord == null ? null : Query(name, queryType, new IPEndPoint(arecord.Address, 53), rClass);
+            if (arecord != null)
+                return Query(name, queryType, new IPEndPoint(arecord.Address, 53), rClass);
+
+            //Support for IP6 when IP4 does not exist
+            auth = Query(soaRecord.MName, RecordType.AaaaRecord, dnsServer, rClass);
+            if (auth.Answers == null || !auth.Answers.Any())
+                return null;
+
+            var aaaarecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.AaaaRecord;
+
+            return aaaarecord == null ? null : Query(name, queryType, new IPEndPoint(aaaarecord.Address, 53), rClass);
         }
 
-        public async Task<DNS.ExternalInterfaces.IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        public async Task<DNS.ExternalInterfaces.IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
         {
             return await Task.Factory.StartNew(() => Query(name, queryType, dnsServer, rClass));
         }
 
-        public async Task<DNS.ExternalInterfaces.IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In)
+        public async Task<DNS.ExternalInterfaces.IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
         {
             return await Task.Factory.StartNew(() => AuthoratativeQuery(name, domain, queryType, dnsServer, rClass));
         }
 
         public string QueryWhois(string domainName)
         {
-            domainName = domainName.Trim().Replace("http://", "").Replace("https://", "");
+            if (string.IsNullOrEmpty(domainName))
+                return string.Empty;
+
+            domainName = domainName.TryTrim().Replace("http://", "").Replace("https://", "");
             var firstResult = WhoisTransport.RunWhoisQuery(domainName, TldHandler.GetTldServer(domainName));
 
             if(string.IsNullOrEmpty(firstResult))
@@ -166,12 +187,45 @@ namespace ManagedDnsQuery
 
         public SpfResult VerifySpfRecord(string domain, string ip)
         {
-            return SpfChecker.VerifySpfRecord(domain, ip);
+            IPAddress _ip = null;
+            if(IPAddress.TryParse(ip, out _ip))
+                return SpfResult.NoResult;
+
+            if(string.IsNullOrEmpty(domain.TryTrim()))
+                return SpfResult.NoResult;
+
+            var spf = AuthoratativeQuery(domain, domain, RecordType.TxtRecord, _defaultServer1); //Only query TXT records since SPF was obsoleted in aug 2013
+            if(spf.Answers == null || !spf.Answers.Any())
+                return SpfResult.NoResult;
+
+            //verify not sender id
+            if (spf.Answers.Any(an => (an as DNS.ExternalConcretes.TxtRecord) != null 
+                                      && !string.Equals((an as DNS.ExternalConcretes.TxtRecord).Text.TrySubstring(0, 6), "v=spf1", StringComparison.CurrentCultureIgnoreCase)))
+                return SpfResult.NoResult; //Not SPF answer
+
+            //break spf records down
+            var parts = spf.Answers.SelectMany(an => (an as DNS.ExternalConcretes.TxtRecord).Text.Split(' '));
+
+            //verify 8 mechanisms
+            foreach (var part in parts)
+            {
+                if (string.Equals("v=spf1", part.TryTrim(), StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+
+                //IP Mechanism
+                if(string.Equals("ip", part.TrySubstring(0,2), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    if(SpfChecker.VerifyIpMechanism(_ip, part.TryTrim()) != SpfResult.Pass)
+                        return SpfResult.Fail;
+                }
+            }
+
+            
         }
 
-        public Task<SpfResult> VerifySpfRecordAsync(string domain, string ip)
+        public async Task<SpfResult> VerifySpfRecordAsync(string domain, string ip)
         {
-            return Task.Factory.StartNew(() => VerifySpfRecord(domain, ip));
+            return await Task.Factory.StartNew(() => VerifySpfRecord(domain, ip));
         }
     }
 }
