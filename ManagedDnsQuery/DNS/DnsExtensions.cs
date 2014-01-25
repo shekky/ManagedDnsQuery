@@ -41,12 +41,12 @@ namespace ManagedDnsQuery.DNS
         internal static IEnumerable<byte> ToLabelBytes(this string value)
         {
             var temp = new List<byte>();
-            value = value.Trim().TrimEnd(new[] {'.'});
+            value = value.TryTrim().TrimEnd(new[] {'.'});
 
             foreach (var peice in value.Split('.'))
             {
                 temp.Add((byte)peice.Length);
-                temp.AddRange(Encoding.ASCII.GetBytes(peice.Trim()));
+                temp.AddRange(Encoding.ASCII.GetBytes(peice.TryTrim()));
             }
 
             temp.Add(0);
