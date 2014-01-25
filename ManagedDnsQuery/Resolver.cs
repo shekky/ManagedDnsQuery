@@ -62,7 +62,7 @@ namespace ManagedDnsQuery
             SpfChecker = new SpfChecker();
         }
 
-        public Resolver(IDnsTransport transport, ISpfChecker checker = null, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
+        public Resolver(IDnsTransport transport, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, ISpfChecker checker = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
         {
             Transport = transport;
             SpfChecker = (checker ?? new SpfChecker());
