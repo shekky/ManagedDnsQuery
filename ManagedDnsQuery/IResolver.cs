@@ -28,7 +28,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.ExternalInterfaces;
-using ManagedDnsQuery.WHOIS.Interfaces;
+using ManagedDnsQuery.SPF.Interfaces;
 
 namespace ManagedDnsQuery
 {
@@ -37,10 +37,6 @@ namespace ManagedDnsQuery
         bool UseRecursion { get; set; }
         int TimeOut { get; set; }
         int Retries { get; set; }
-        IDnsTransport Transport { get; }
-        IWhoisTransport WhoisTransport { get; }
-        ITLDHandler TldHandler { get; }
-        IQueryCache Cache { get; }
 
         IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
         Task<IMessage> QueryAsync(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
@@ -48,5 +44,7 @@ namespace ManagedDnsQuery
         Task<IMessage> AuthoratativeQueryAsync(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
         string QueryWhois(string domainName);
         Task<string> QueryWhoisAsync(string domainName);
+        SpfResult VerifySpfRecord(string domain, string ip);
+        Task<SpfResult> VerifySpfRecordAsync(string domain, string ip);
     }
 }

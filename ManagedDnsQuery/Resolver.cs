@@ -32,6 +32,8 @@ using System.Threading.Tasks;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
+using ManagedDnsQuery.SPF.Concretes;
+using ManagedDnsQuery.SPF.Interfaces;
 using ManagedDnsQuery.WHOIS.Concretes;
 using ManagedDnsQuery.WHOIS.Interfaces;
 
@@ -42,11 +44,12 @@ namespace ManagedDnsQuery
         public bool UseRecursion { get; set; }
         public int TimeOut { get; set; }
         public int Retries { get; set; }
-        public IDnsTransport Transport { get; private set; }
-        public IWhoisTransport WhoisTransport { get; private set; }
-        public ITLDHandler TldHandler { get; private set; }
-        public IQueryCache Cache { get; private set; }
-        
+        private IDnsTransport Transport { get; set; }
+        private IWhoisTransport WhoisTransport { get; set; }
+        private ITLDHandler TldHandler { get; set; }
+        private IQueryCache Cache { get; set; }
+        private ISpfChecker SpfChecker { get; set; }
+
         public Resolver()
         {
             Transport = new UdpDnsTransport();
@@ -56,11 +59,13 @@ namespace ManagedDnsQuery
             UseRecursion = true;
             WhoisTransport = new WhoisTcpTransport();
             TldHandler = new TldHandler();
+            SpfChecker = new SpfChecker();
         }
 
-        public Resolver(IDnsTransport transport, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
+        public Resolver(IDnsTransport transport, ISpfChecker checker = null, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
         {
             Transport = transport;
+            SpfChecker = (checker ?? new SpfChecker());
             Retries = retrys;
             TimeOut = timeout;
             UseRecursion = useRecursion;
@@ -157,6 +162,16 @@ namespace ManagedDnsQuery
         public async Task<string> QueryWhoisAsync(string domainName)
         {
             return await Task.Factory.StartNew(() => QueryWhois(domainName));
+        }
+
+        public SpfResult VerifySpfRecord(string domain, string ip)
+        {
+            return SpfChecker.VerifySpfRecord(domain, ip);
+        }
+
+        public Task<SpfResult> VerifySpfRecordAsync(string domain, string ip)
+        {
+            return Task.Factory.StartNew(() => VerifySpfRecord(domain, ip));
         }
     }
 }
