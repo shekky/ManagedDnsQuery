@@ -49,8 +49,8 @@ namespace ManagedDnsQuery
         private ITLDHandler TldHandler { get; set; }
         private IQueryCache Cache { get; set; }
         private ISpfChecker SpfChecker { get; set; }
-        private readonly IPEndPoint _defaultServer1 = new IPEndPoint(IPAddress.Parse(""), 53);
-        private readonly IPEndPoint _defaultServer2 = new IPEndPoint(IPAddress.Parse(""), 53);
+        private readonly IPEndPoint _defaultServer1 = new IPEndPoint(IPAddress.Parse("208.67.222.222"), 53);
+        private readonly IPEndPoint _defaultServer2 = new IPEndPoint(IPAddress.Parse("208.67.220.220"), 53);
 
         public Resolver()
         {
@@ -220,7 +220,7 @@ namespace ManagedDnsQuery
                 }
             }
 
-            
+            return SpfResult.Pass;
         }
 
         public async Task<SpfResult> VerifySpfRecordAsync(string domain, string ip)
