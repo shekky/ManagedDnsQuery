@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -53,22 +52,13 @@ namespace ManagedDnsQuery.DNS
             return temp;
         }
 
-        internal static string ToByteString(this IEnumerable<byte> value)
-        {
-            var sb = new StringBuilder();
-            foreach (var b in value)
-                sb.Append(b);
-
-            return sb.ToString();
-        }
-
-        internal static bool IsExpired(this IMessage value)
+        internal static bool IsExpired(this IResourceRecord value)
         {
             var expired = true;
 
-            if (value != null && value.Answers != null && value.Answers.Any())
-                expired = value.Answers.Select(ans => ans.TimeStamp.AddSeconds(ans.Ttl)).Any(dt => dt <= DateTime.Now);
-
+            if (value != null)
+                expired = (value.TimeStamp.AddSeconds(value.Ttl).CompareTo(DateTime.Now) < 0);
+            
             return expired;
         }
 

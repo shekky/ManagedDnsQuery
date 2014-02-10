@@ -24,6 +24,7 @@ THE SOFTWARE.
  ==================================================================================
  **********************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -91,7 +92,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             expected = actual.Answers.ToACollection().ToArray();
             actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
-            Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
+            Assert.AreEqual(false, actual.Header.AuthoritativeAnswer, "Should have returned from Cache");
             AssertEquality(expected, actual.Answers.ToACollection());
         }
 
@@ -142,7 +143,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             expected = actual.Answers.ToMxCollection().ToArray();
             actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
-            Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
+            Assert.AreEqual(false, actual.Header.AuthoritativeAnswer, "Should have returned from Cache");
             AssertEquality(expected, actual.Answers.ToMxCollection());
         }
 
@@ -174,7 +175,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             expected = actual.Answers.ToCNameCollection().ToArray();
             actual = resolver.AuthoratativeQuery("www.yahoo.com", RecordType.CNameRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
-            Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
+            Assert.AreEqual(false, actual.Header.AuthoritativeAnswer, "Should have returned from Cache");
             AssertEquality(expected, actual.Answers.ToCNameCollection());
         }
 
@@ -254,7 +255,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
 
             expected = actual.Answers.ToNsCollection().ToArray();
             actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.NsRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
-            Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
+            Assert.AreEqual(false, actual.Header.AuthoritativeAnswer, "Should have returned from Cache");
             AssertEquality(expected, actual.Answers.ToNsCollection());
         }
 
@@ -263,7 +264,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             var mockedTransport = new Mock<IDnsTransport>();
 
             mockedTransport.Setup(tr => tr.SendRequest(It.IsAny<IMessage>(), It.IsAny<IPEndPoint>(), It.IsAny<int>()))
-                .Returns((IMessage mes, IPEndPoint srv, int timeout) => new DNS.MessageingConcretes.Message(dnsData[mes.Questions.FirstOrDefault().ToBytes().ToByteString()]));
+                .Returns((IMessage mes, IPEndPoint srv, int timeout) => new DNS.MessageingConcretes.Message(dnsData[string.Format("{0}{1}{2}", mes.Questions.FirstOrDefault().QName.ToLower(), mes.Questions.FirstOrDefault().QClass, mes.Questions.FirstOrDefault().QType)]));
 
             return mockedTransport;
         }
@@ -272,7 +273,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             = new Dictionary<string, IEnumerable<byte>>
                   {
                       {
-                          "51219710411111139911110900601", //Yahoo SOA from OpenDns 208.67.222.222 and 208.67.220.220
+                          "yahoo.com.InSoaRecord", //Yahoo SOA from OpenDns 208.67.222.222 and 208.67.220.220
                           new byte []
                               {
                                   91, 33, 129, 128, 0, 1, 0, 1, 0, 0, 0, 0, 5, 121, 97, 104,
@@ -284,7 +285,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                               }
                        },
                        {
-                           "31101154951219710411111139911110900101", //A record for ns1.yahoo.com from OpenDns 208.67.222.222 and 208.67.220.220
+                           "ns1.yahoo.com.InARecord", //A record for ns1.yahoo.com from OpenDns 208.67.222.222 and 208.67.220.220
                            new byte []
                                {
                                     91, 35, 129, 128, 0, 1, 0, 1, 0, 0, 0, 0, 3, 110, 115, 49,
@@ -293,7 +294,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                }
                        },
                        {
-                           "51219710411111139911110900101", //A record for yahoo.com from ns1.yahoo.com / 68.180.131.16
+                           "yahoo.com.InARecord", //A record for yahoo.com from ns1.yahoo.com / 68.180.131.16
                            new byte []
                                {
                                     91, 36, 133, 0, 0, 1, 0, 3, 0, 7, 0, 7, 5, 121, 97, 104,
@@ -320,7 +321,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                }
                        },
                        {
-                           "512197104111111399111109001501", //Mx records for yahoo.com from ns1.yahoo.com / 68.180.131.16
+                           "yahoo.com.InMxRecord", //Mx records for yahoo.com from ns1.yahoo.com / 68.180.131.16
                            new byte []
                                {
                                     91, 37, 133, 0, 0, 1, 0, 3, 0, 7, 0, 7, 5, 121, 97, 104,
@@ -349,7 +350,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                }
                        },
                        {
-                           "311911911951219710411111139911110900501", //CName record for ns1.yahoo.com from ns1.yahoo.com / 68.180.131.16
+                           "www.yahoo.com.InCNameRecord", //CName record for ns1.yahoo.com from ns1.yahoo.com / 68.180.131.16
                            new byte []
                                {
                                     91, 38, 133, 0, 0, 1, 0, 1, 0, 7, 0, 7, 3, 119, 119, 119,
@@ -375,7 +376,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                }
                        },
                        {
-                           "51219710411111139911110900201", // record for ns1.yahoo.com from ns1.yahoo.com / 68.180.131.16
+                           "yahoo.com.InNsRecord", // record for ns1.yahoo.com from ns1.yahoo.com / 68.180.131.16
                            new byte []
                                {
                                     91, 39, 133, 0, 0, 1, 0, 7, 0, 0, 0, 7, 5, 121, 97, 104,

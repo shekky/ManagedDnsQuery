@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.MessageingConcretes;
@@ -45,18 +44,18 @@ namespace ManagedDnsQuery.Test.DNS_Tests
             IQueryCache cache = new QueryCache();
             var testMessage = GetTestMessage();
 
-            var message = cache.CheckCache(testMessage.Questions.FirstOrDefault());
+            var message = cache.CheckCache(testMessage.Questions);
             Assert.IsNull(message, "Should be nothing in the cache.");
 
             Assert.IsTrue(cache.AddCache(testMessage), "Should not fail to add to cache");
             Assert.IsTrue(cache.AddCache(GetTestMessage(false)), "Should not fail to add to cache");
 
-            message = cache.CheckCache(testMessage.Questions.FirstOrDefault());
+            message = cache.CheckCache(testMessage.Questions);
             Assert.IsNotNull(message, "Should be found, and should not have expired.");
-            AssertEquality(testMessage, message);
+            AssertEquality(testMessage.Answers, message.Answers);
 
             testMessage = GetTestMessage(false);
-            message = cache.CheckCache(testMessage.Questions.FirstOrDefault());
+            message = cache.CheckCache(testMessage.Questions);
             Assert.IsNull(message, "Message should have expired and been removed from cache.");
         }
 
@@ -70,7 +69,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                  {
                                                      new Question(null)
                                                          {
-                                                             QName = "yahoo.com",
+                                                             QName = "yahoo.com.",
                                                              QType = RecordType.ARecord,
                                                              QClass = RecordClass.In,
                                                          },
@@ -85,7 +84,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                            Ttl = 1800,
                                                            Type = RecordType.ARecord,
                                                            RdLength = 3,
-                                                           Rdata = new byte[] { 0, 0, 0 },
+                                                           Rdata = new byte[] { 206, 190, 36, 45 },
                                                            Record = new ARecord(null)
                                                                         {
                                                                             Address = IPAddress.Parse("206.190.36.45"),
@@ -99,7 +98,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                            Ttl = 1800,
                                                            Type = RecordType.ARecord,
                                                            RdLength = 3,
-                                                           Rdata = new byte[] { 0, 0, 0 },
+                                                           Rdata = new byte[] { 98, 139, 183, 24 },
                                                            Record = new ARecord(null)
                                                                         {
                                                                             Address = IPAddress.Parse("98.139.183.24"),
@@ -114,7 +113,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                  {
                                                      new Question(null)
                                                          {
-                                                             QName = "sample.com",
+                                                             QName = "sample.com.",
                                                              QType = RecordType.ARecord,
                                                              QClass = RecordClass.In,
                                                          },
@@ -129,7 +128,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                            Ttl = 1800,
                                                            Type = RecordType.ARecord,
                                                            RdLength = 3,
-                                                           Rdata = new byte[] { 0, 0, 0 },
+                                                           Rdata = new byte[] { 206, 190, 36, 45 },
                                                            Record = new ARecord(null)
                                                                         {
                                                                             Address = IPAddress.Parse("206.190.36.45"),
@@ -143,7 +142,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                            Ttl = 1800,
                                                            Type = RecordType.ARecord,
                                                            RdLength = 3,
-                                                           Rdata = new byte[] { 0, 0, 0 },
+                                                           Rdata = new byte[] { 98, 139, 183, 24 },
                                                            Record = new ARecord(null)
                                                                         {
                                                                             Address = IPAddress.Parse("98.139.183.24"),
