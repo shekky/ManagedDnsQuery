@@ -64,9 +64,9 @@ namespace ManagedDnsQuery.SPF.Concretes
             return SpfResult.Pass;
         }
 
-        public SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses)
+        public SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses, string range = null)
         {
-            throw new System.NotImplementedException();
+            return SpfResult.Pass;
         }
 
         public SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses)

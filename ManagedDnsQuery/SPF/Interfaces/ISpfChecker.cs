@@ -40,7 +40,7 @@ namespace ManagedDnsQuery.SPF.Interfaces
     public interface ISpfChecker
     {
         SpfResult VerifyIpMechanism(IPAddress sender, string ipSpfText);
-        SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses);
+        SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses, string range = null);
         SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses);
         SpfResult VerifyPtrMechanism(IPAddress sender, IEnumerable<IPAddress> ptrRecordAddresses);
     }
