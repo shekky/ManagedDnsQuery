@@ -77,6 +77,10 @@ namespace ManagedDnsQuery.DNS.MessageingConcretes
                                 .Take(2)
                                 .ToLeUShort();
 
+            NsCount = rawHeader.Skip((int) HeaderBytePosition.NsCount)
+                                .Take(2)
+                                .ToLeUShort();
+
             ArCount = rawHeader.Skip((int) HeaderBytePosition.ArCount)
                                 .Take(2)
                                 .ToLeUShort();
