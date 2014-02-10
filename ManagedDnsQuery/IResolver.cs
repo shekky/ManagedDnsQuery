@@ -37,9 +37,9 @@ namespace ManagedDnsQuery
         int TimeOut { get; set; }
         int Retries { get; set; }
 
-        IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
-        IMessage AuthoratativeQuery(string name, string domain, RecordType queryType, IPEndPoint dnsServer, RecordClass rClass = RecordClass.In);
+        IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
+        IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
         string QueryWhois(string domainName);
-        SpfResult VerifySpfRecord(string domain, string ip);
+        SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null);
     }
 }
