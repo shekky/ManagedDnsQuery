@@ -52,21 +52,32 @@ namespace ManagedDnsQuery.SPF.Concretes
                 var range = ipSpfText.Split(':').Skip(1).FirstOrDefault();
                 INetworkDetails details = Parser.ParseRange(range);
 
-                if (!details.IsInRange(sender))
-                    return SpfResult.Fail;
+                if (details.IsInRange(sender))
+                    return SpfResult.Pass;
             }
             else
             {
-                if (!sender.Equals(IPAddress.Parse(ipSpfText.Split(':').Skip(1).FirstOrDefault())))
-                    return SpfResult.Fail;
+                if (sender.Equals(IPAddress.Parse(ipSpfText.Split(':').Skip(1).FirstOrDefault())))
+                    return SpfResult.Pass;
             }
 
-            return SpfResult.Pass;
+            return SpfResult.Fail;
         }
 
         public SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses, string range = null)
         {
-            return SpfResult.Pass;
+            if(string.IsNullOrEmpty(range))
+            {
+                if (aRecordAddresses.Select(add => Parser.ParseRange(string.Format("{0} /{1}", add, range))).Any(details => details.IsInRange(sender)))
+                    return SpfResult.Pass;
+            }
+            else
+            {
+                if(aRecordAddresses.Any(add => add.Equals(sender)))
+                    return SpfResult.Pass;
+            }
+
+            return SpfResult.Fail;
         }
 
         public SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses)
