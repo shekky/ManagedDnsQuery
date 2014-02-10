@@ -24,13 +24,14 @@ THE SOFTWARE.
  ==================================================================================
  **********************************************************************************/
 
+using System.Collections.Generic;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
 namespace ManagedDnsQuery
 {
     public interface IQueryCache
     {
-        IMessage CheckCache(IQuestion question);
+        IMessage CheckCache(IEnumerable<IQuestion> questions);
         bool AddCache(IMessage message);
     }
 }
