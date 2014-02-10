@@ -75,10 +75,10 @@ namespace ManagedDnsQuery
             TldHandler = (tldHandler?? new TldHandler());
         }
 
-        public DNS.ExternalInterfaces.IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
+        public DNS.ExternalInterfaces.IMessage Query(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
         {
-            if (!string.IsNullOrEmpty(name) && name.TrySubstring(name.Length - 1) != ".")
-                name = string.Format("{0}.", name);
+            if (!string.IsNullOrEmpty(domain) && domain.TrySubstring(domain.Length - 1) != ".")
+                domain = string.Format("{0}.", domain);
 
             IMessage request = new Message
                                    {
@@ -93,16 +93,21 @@ namespace ManagedDnsQuery
                                                         {
                                                             new Question(null)
                                                                 {
-                                                                    QName = (queryType == RecordType.PtrRecord ? name.ToArpa() : name),
+                                                                    QName = (queryType == RecordType.PtrRecord ? domain.ToArpa() : domain),
                                                                     QType = queryType,
                                                                     QClass = rClass,
                                                                 },
                                                         },
                                    };
 
-            var cached = Cache.CheckCache(request.Questions.FirstOrDefault());
+            var cached = Cache.CheckCache(request.Questions);
             if (cached != null && cached.Answers != null && cached.Answers.Any())
+            {
+                cached.Header = request.Header;
+                cached.Questions = request.Questions;
                 return cached.GetExternalAnswer();
+            }
+                
 
             var result = Transport.SendRequest(request, dnsServer??_defaultServer1, TimeOut);
 
@@ -110,6 +115,46 @@ namespace ManagedDnsQuery
                 for (var ndx = 1; ndx < Retries; ++ndx)
                 {
                     result = Transport.SendRequest(request, dnsServer??_defaultServer1, TimeOut);
+                    if (result != null && result.Header != null && (result.Header.RCode != ResponseCode.FormErr && result.Header.RCode != ResponseCode.ServFail))
+                        ndx = Retries;
+                }
+
+            if (result != null)
+                Cache.AddCache(result);
+
+            return result != null ? result.GetExternalAnswer() : null;
+        }
+
+        public DNS.ExternalInterfaces.IMessage Query(IEnumerable<IQuestion> questions, IPEndPoint dnsServer = null)
+        {
+            IMessage request = new Message
+                {
+                    Header = new Header(null)
+                        {
+                            OpCode = OpCode.Query,
+                            QdCount = 1,
+                            Id = (ushort)(new Random()).Next(),
+                            Rd = UseRecursion,
+                        },
+                    Questions = new List<IQuestion>(),
+                };
+            request.Questions = questions;
+
+
+            var cached = Cache.CheckCache(request.Questions);
+            if (cached != null && cached.Answers != null && cached.Answers.Any())
+            {
+                cached.Header = request.Header;
+                cached.Questions = request.Questions;
+                return cached.GetExternalAnswer();
+            }
+
+            var result = Transport.SendRequest(request, dnsServer ?? _defaultServer1, TimeOut);
+
+            if (result == null || result.Header == null || result.Header.RCode == ResponseCode.FormErr || result.Header.RCode == ResponseCode.ServFail)
+                for (var ndx = 1; ndx < Retries; ++ndx)
+                {
+                    result = Transport.SendRequest(request, dnsServer ?? _defaultServer1, TimeOut);
                     if (result != null && result.Header != null && (result.Header.RCode != ResponseCode.FormErr && result.Header.RCode != ResponseCode.ServFail))
                         ndx = Retries;
                 }
@@ -187,10 +232,14 @@ namespace ManagedDnsQuery
             if (spf == null || !spf.Any())
                 return SpfResult.NoResult;
 
+            var queryCount = 0;
             //foreach spf record fetched, loop till pass.
             var results = new List<SpfResult>();
             foreach (var rec in spf)
             {
+                if(queryCount > 10) //Should not make more than 10 dns queries to fetch data needed to check spf.
+                    return SpfResult.NoResult;
+
                 //Test each mechanism individually in each record.
                 foreach (var part in rec.Text.Split(' '))
                 {
@@ -201,38 +250,95 @@ namespace ManagedDnsQuery
                     if (string.Equals("include:", part.TryTrim().TrySubstring(0, 8), StringComparison.CurrentCultureIgnoreCase))
                         continue;
 
-                    //IP4 / IP6 Mechanism
+                    #region IP Mechanism
                     if (string.Equals("ip", part.TrySubstring(0, 2), StringComparison.CurrentCultureIgnoreCase))
                         if (SpfChecker.VerifyIpMechanism(_ip, part.TryTrim()) == SpfResult.Pass)
                             return SpfResult.Pass;
+                    #endregion
 
-                    //A Mechanism
+                    #region A Record Mechanism
                     if(string.Equals("a", part.TrySubstring(0, 1), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        var range = part.Split('/').Skip(1).FirstOrDefault(); //Get range first.
-                        var host = part.Split('/').FirstOrDefault().Split(':').FirstOrDefault(); //Get domain.
+                        var range = part.Split('/').Skip(1).FirstOrDefault().TryTrim(); //Get range first.
+                        var host = part.Split('/').FirstOrDefault().Split(':').FirstOrDefault().TryTrim(); //Get domain.
+                        if (string.Equals("a", host, StringComparison.CurrentCultureIgnoreCase))
+                            host = domain.TryTrim();
 
+                        var addresses = new List<IPAddress>();
                         var aRecs = AuthoratativeQuery(host, RecordType.ARecord, dnsServer ?? _defaultServer1);
-                        if (aRecs.Answers == null || !aRecs.Answers.Any())
+                        queryCount++;
+                        if (aRecs.Answers != null && aRecs.Answers.Any())
+                        {
+                            addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.ARecord) != null)
+                                                            .Select(an => (an as DNS.ExternalConcretes.ARecord).Address));
+                        }
+                        else
                         {
                             //Try Aaaa in the event no A records. 
                             aRecs = AuthoratativeQuery(host, RecordType.AaaaRecord, dnsServer ?? _defaultServer1);
-                            if (aRecs.Answers == null || !aRecs.Answers.Any())
+                            queryCount++;
+                            if (aRecs.Answers != null && aRecs.Answers.Any())
+                                addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.AaaaRecord) != null)
+                                                            .Select(an => (an as DNS.ExternalConcretes.AaaaRecord).Address));
+                            else
                                 continue; //Fail / error...
                         }
 
+                        if (SpfChecker.VerifyAMechanism(_ip, addresses, (!string.IsNullOrEmpty(range) ? range.TryTrim() : null)) == SpfResult.Pass)
+                            return SpfResult.Pass;
+                    }
+                    #endregion
+
+                    #region MX Record Mechanism
+                    if (string.Equals("mx", part.TrySubstring(0, 1), StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        var range = part.Split('/').Skip(1).FirstOrDefault().TryTrim(); //Get range first.
+                        var host = part.Split('/').FirstOrDefault().Split(':').FirstOrDefault().TryTrim(); //Get domain.
+                        if (string.Equals("mx", host, StringComparison.CurrentCultureIgnoreCase))
+                            host = domain.TryTrim();
+
+                        var addresses = new List<IPAddress>();
+                        var mxRecs = AuthoratativeQuery(host, RecordType.MxRecord, dnsServer ?? _defaultServer1);
+                        queryCount++;
+                        if(mxRecs.Answers == null || !mxRecs.Answers.Any())
+                            continue; //No mxes 
+
+                        //TODO: allow to add more than one question...
+                        //var aRecs = new DNS.ExternalConcretes.IMessage();
+                        //if (aRecs.Answers != null && aRecs.Answers.Any())
+                        //{
+                        //    addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.ARecord) != null)
+                        //                                    .Select(an => (an as DNS.ExternalConcretes.ARecord).Address));
+                        //}
+                        //else
+                        //{
+                        //    //Try Aaaa in the event no A records. 
+                        //    aRecs = AuthoratativeQuery(host, RecordType.AaaaRecord, dnsServer ?? _defaultServer1);
+                        //    queryCount++;
+                        //    if (aRecs.Answers != null && aRecs.Answers.Any())
+                        //        addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.AaaaRecord) != null)
+                        //                                    .Select(an => (an as DNS.ExternalConcretes.AaaaRecord).Address));
+                        //    else
+                        //        continue; //Fail / error...
+                        //}
+
+                        //if (SpfChecker.VerifyAMechanism(_ip, addresses, (!string.IsNullOrEmpty(range) ? range.TryTrim() : null)) == SpfResult.Pass)
+                        //    return SpfResult.Pass;
+                    }
+                    #endregion
+
+                    #region PTR Record Mechanism
+                    if (string.Equals("ptr", part.TrySubstring(0, 1), StringComparison.CurrentCultureIgnoreCase))
+                    {
 
                     }
+                    #endregion
 
-                    //    //MX Mechanism
-
-                    //    //PTR Mechanism
-
-                    //    //EXISTS - A record exists no matter the address.
+                    //EXISTS - A record exists no matter the address.
                 }
             }
 
-            return SpfResult.Pass;
+            return SpfResult.Fail;
         }
 
         private IEnumerable<DNS.ExternalConcretes.TxtRecord> GetSpfRecords(string domain, IPEndPoint dnsServer = null)

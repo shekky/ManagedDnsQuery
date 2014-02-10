@@ -24,6 +24,7 @@ THE SOFTWARE.
  ==================================================================================
  **********************************************************************************/
 
+using System.Collections.Generic;
 using System.Net;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.ExternalInterfaces;
@@ -37,7 +38,8 @@ namespace ManagedDnsQuery
         int TimeOut { get; set; }
         int Retries { get; set; }
 
-        IMessage Query(string name, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
+        IMessage Query(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
+        IMessage Query(IEnumerable<DNS.MessageingInterfaces.IQuestion> questions, IPEndPoint dnsServer = null);
         IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
         string QueryWhois(string domainName);
         SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null);
