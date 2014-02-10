@@ -108,7 +108,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                    AnCount = 3,
                                    ArCount = 7,
                                    Id = 10659,
-                                   NsCount = 0,
+                                   NsCount = 7,
                                    OpCode = OpCode.Query,
                                    QdCount = 1,
                                    Qr = Qr.Response,

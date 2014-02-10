@@ -81,7 +81,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                       },
                                };
 
-            var actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            var actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToACollection());
 
@@ -90,7 +90,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                 .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToACollection().ToArray();
-            actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.ARecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToACollection());
         }
@@ -132,7 +132,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                        },
                                };
 
-            var actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            var actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToMxCollection());
 
@@ -141,7 +141,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                 .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToMxCollection().ToArray();
-            actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.MxRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToMxCollection());
         }
@@ -164,7 +164,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                        },
                                };
 
-            var actual = resolver.AuthoratativeQuery("www.yahoo.com", "yahoo.com", RecordType.CNameRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            var actual = resolver.AuthoratativeQuery("www.yahoo.com", RecordType.CNameRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToCNameCollection());
 
@@ -173,7 +173,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                 .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToCNameCollection().ToArray();
-            actual = resolver.AuthoratativeQuery("www.yahoo.com", "yahoo.com", RecordType.CNameRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            actual = resolver.AuthoratativeQuery("www.yahoo.com", RecordType.CNameRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToCNameCollection());
         }
@@ -244,7 +244,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                        },
                                };
 
-            var actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.NsRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            var actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.NsRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToNsCollection());
 
@@ -253,7 +253,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                 .Returns(new DNS.MessageingConcretes.Message());
 
             expected = actual.Answers.ToNsCollection().ToArray();
-            actual = resolver.AuthoratativeQuery("yahoo.com", "yahoo.com", RecordType.NsRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
+            actual = resolver.AuthoratativeQuery("yahoo.com", RecordType.NsRecord, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 53));
             Assert.AreEqual(true, actual.Header.AuthoritativeAnswer, "Should have returned from SOA");
             AssertEquality(expected, actual.Answers.ToNsCollection());
         }

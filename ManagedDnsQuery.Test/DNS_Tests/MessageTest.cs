@@ -115,7 +115,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                        AnCount = 3,
                                                        ArCount = 7,
                                                        Id = 10659,
-                                                       NsCount = 0,
+                                                       NsCount = 7,
                                                        OpCode = OpCode.Query,
                                                        QdCount = 1,
                                                        Qr = Qr.Response,
@@ -179,7 +179,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                                           },
                                                          },
                                                  },
-                                   Additionals = new List<IResourceRecord>
+                                   Authorities = new List<IResourceRecord>
                                                      {
                                                          new ResourceRecord(null)
                                                              {
@@ -273,7 +273,100 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                                               },
                                                              },
                                                      },
-                                   Authorities = new List<IResourceRecord>(),
+                                   Additionals = new List<IResourceRecord>
+                                                        {
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns1.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 68, 180, 131, 16 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("68.180.131.16"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns2.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] {68, 142, 255, 16 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("68.142.255.16"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns3.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 203, 84, 221, 53 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("203.84.221.53"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns4.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 98, 138, 11, 157 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("98.138.11.157"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns5.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 119, 160, 247, 124 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("119.168.247.124"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns6.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 202, 43, 223, 170 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("202.43.223.170"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns8.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 202, 165, 104, 22 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("202.165.104.22"),
+                                                                        }
+                                                                },
+                                                        },
                                };
 
             IMessage actual = new Message(response);
@@ -383,7 +476,7 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                     AnCount = 3,
                                                     ArCount = 7,
                                                     Id = 55101,
-                                                    NsCount = 0,
+                                                    NsCount = 7,
                                                     OpCode = OpCode.Query,
                                                     QdCount = 1,
                                                     Qr = Qr.Response,
@@ -445,100 +538,194 @@ namespace ManagedDnsQuery.Test.DNS_Tests
                                                          },
                                                  },
                                    Additionals = new List<IResourceRecord>
-                                                     {
-                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] {3, 110, 115, 49, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns1.yahoo.com.",
-                                                                              },
-                                                             },
-                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] {3, 110, 115, 53, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns5.yahoo.com.",
-                                                                              },
-                                                             },
-                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] {3, 110, 115, 54, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns6.yahoo.com.",
-                                                                              },
-                                                             },
-                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] {3, 110, 115, 51, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns3.yahoo.com.",
-                                                                              },
-                                                             },
-                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] { 3, 110, 115, 50, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns2.yahoo.com.",
-                                                                              },
-                                                             },
+                                                        {
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns1.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 68, 180, 131, 16 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("68.180.131.16"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns2.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] {68, 142, 255, 16 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("68.142.255.16"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns3.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 203, 84, 221, 53 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("203.84.221.53"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns4.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 98, 138, 11, 157 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("98.138.11.157"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns5.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 119, 160, 247, 124 },
+                                                                    Ttl = 1209600,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("119.168.247.124"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns6.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 202, 43, 223, 170 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("202.43.223.170"),
+                                                                        }
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "ns8.yahoo.com.",
+                                                                    RdLength = 4,
+                                                                    Rdata = new byte[] { 202, 165, 104, 22 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.ARecord,
+                                                                    Record = new ARecord(null)
+                                                                        {
+                                                                            Address = IPAddress.Parse("202.165.104.22"),
+                                                                        }
+                                                                },
+                                                        },
+                                                     
+                                   Authorities = new List<IResourceRecord>
+                                                        {
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] {3, 110, 115, 49, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns1.yahoo.com.",
+                                                                                },
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] {3, 110, 115, 53, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns5.yahoo.com.",
+                                                                                },
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] {3, 110, 115, 54, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns6.yahoo.com.",
+                                                                                },
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] {3, 110, 115, 51, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns3.yahoo.com.",
+                                                                                },
+                                                                },
+                                                            new ResourceRecord(null)
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] { 3, 110, 115, 50, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns2.yahoo.com.",
+                                                                                },
+                                                                },
                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] {3, 110, 115, 52, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns4.yahoo.com.",
-                                                                              },
-                                                             },
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] {3, 110, 115, 52, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns4.yahoo.com.",
+                                                                                },
+                                                                },
                                                         new ResourceRecord(null)
-                                                             {
-                                                                 Class = RecordClass.In,
-                                                                 Name = "yahoo.com.",
-                                                                 RdLength = 6,
-                                                                 Rdata = new byte[] {3, 110, 115, 56, 192, 12 },
-                                                                 Ttl = 172800,
-                                                                 Type = RecordType.NsRecord,
-                                                                 Record = new NsRecord(null)
-                                                                              {
-                                                                                  NsDomainName = "ns8.yahoo.com.",
-                                                                              },
-                                                             },
-                                                     },
-                                   Authorities = new List<IResourceRecord>(),
+                                                                {
+                                                                    Class = RecordClass.In,
+                                                                    Name = "yahoo.com.",
+                                                                    RdLength = 6,
+                                                                    Rdata = new byte[] {3, 110, 115, 56, 192, 12 },
+                                                                    Ttl = 172800,
+                                                                    Type = RecordType.NsRecord,
+                                                                    Record = new NsRecord(null)
+                                                                                {
+                                                                                    NsDomainName = "ns8.yahoo.com.",
+                                                                                },
+                                                                },
+                                                        },
                                };
 
             IMessage actual = new Message(rawResponse);
