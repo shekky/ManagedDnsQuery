@@ -41,6 +41,7 @@ namespace ManagedDnsQuery
         IMessage Query(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
         IMessage Query(IEnumerable<DNS.MessageingInterfaces.IQuestion> questions, IPEndPoint dnsServer = null);
         IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
+        IMessage AuthoratativeQuery(IEnumerable<DNS.MessageingInterfaces.IQuestion> questions, IPEndPoint dnsServer = null);
         string QueryWhois(string domainName);
         SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null);
     }
