@@ -80,12 +80,12 @@ namespace ManagedDnsQuery.SPF.Concretes
             return SpfResult.Fail;
         }
 
-        public SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses)
+        public SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses, string range = null)
         {
             throw new System.NotImplementedException();
         }
 
-        public SpfResult VerifyPtrMechanism(IPAddress sender, IEnumerable<IPAddress> ptrRecordAddresses)
+        public SpfResult VerifyPtrMechanism(IPAddress sender, IEnumerable<IPAddress> ptrRecordAddresses, string range = null)
         {
             throw new System.NotImplementedException();
         }

@@ -41,7 +41,7 @@ namespace ManagedDnsQuery.SPF.Interfaces
     {
         SpfResult VerifyIpMechanism(IPAddress sender, string ipSpfText);
         SpfResult VerifyAMechanism(IPAddress sender, IEnumerable<IPAddress> aRecordAddresses, string range = null);
-        SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses);
-        SpfResult VerifyPtrMechanism(IPAddress sender, IEnumerable<IPAddress> ptrRecordAddresses);
+        SpfResult VerifyMxMechanism(IPAddress sender, IEnumerable<IPAddress> mxRecordAddresses, string range = null);
+        SpfResult VerifyPtrMechanism(IPAddress sender, IEnumerable<IPAddress> ptrRecordAddresses, string range = null);
     }
 }
