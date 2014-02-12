@@ -31,7 +31,6 @@ using System.Net;
 using ManagedDnsQuery.DNS;
 using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
-using ManagedDnsQuery.DNS.RDataConcretes;
 using ManagedDnsQuery.SPF.Concretes;
 using ManagedDnsQuery.SPF.Interfaces;
 using ManagedDnsQuery.WHOIS.Concretes;
@@ -64,7 +63,7 @@ namespace ManagedDnsQuery
             SpfChecker = new SpfChecker();
         }
 
-        public Resolver(IDnsTransport transport, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, ISpfChecker checker = null, int retrys = 3, int timeout = 60, bool useRecursion = true)
+        public Resolver(IDnsTransport transport, IQueryCache cache = null, IWhoisTransport wtransport = null, ITLDHandler tldHandler = null, ISpfChecker checker = null, int retrys = 3, int timeout = 60)
         {
             Transport = transport;
             SpfChecker = (checker ?? new SpfChecker());
@@ -126,7 +125,7 @@ namespace ManagedDnsQuery
             return result != null ? result.GetExternalAnswer() : null;
         }
 
-        public DNS.ExternalInterfaces.IMessage Query(IEnumerable<IQuestion> questions, IPEndPoint dnsServer = null)
+        public DNS.ExternalInterfaces.IMessage Query(IEnumerable<DNS.ExternalInterfaces.IQuestion> questions, IPEndPoint dnsServer = null)
         {
             IMessage request = new Message
                 {
@@ -137,10 +136,8 @@ namespace ManagedDnsQuery
                             Id = (ushort)(new Random()).Next(),
                             Rd = UseRecursion,
                         },
-                    Questions = new List<IQuestion>(),
                 };
-            request.Questions = questions;
-
+            request.Questions = questions.ToQuestions();
 
             var cached = Cache.CheckCache(request.Questions);
             if (cached != null && cached.Answers != null && cached.Answers.Any())
@@ -166,7 +163,7 @@ namespace ManagedDnsQuery
             return result != null ? result.GetExternalAnswer() : null;
         }
 
-        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In)
+        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In, bool ipv6Failover = false)
         {
             var index = domain.LastIndexOf('.');
             var last = 3;
@@ -195,17 +192,22 @@ namespace ManagedDnsQuery
             if (arecord != null)
                 return Query(domain, queryType, new IPEndPoint(arecord.Address, 53), rClass);
 
-            //Support for IP6 when IP4 does not exist
-            auth = Query(soaRecord.MName, RecordType.AaaaRecord, dnsServer, rClass);
-            if (auth.Answers == null || !auth.Answers.Any())
-                return null;
+            if (ipv6Failover)
+            {
+                //Support for IP6 when IP4 does not exist
+                auth = Query(soaRecord.MName, RecordType.AaaaRecord, dnsServer, rClass);
+                if (auth.Answers == null || !auth.Answers.Any())
+                    return null;
 
-            var aaaarecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.AaaaRecord;
+                var aaaarecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.AaaaRecord;
 
-            return aaaarecord == null ? null : Query(domain, queryType, new IPEndPoint(aaaarecord.Address, 53), rClass);
+                return aaaarecord == null ? null : Query(domain, queryType, new IPEndPoint(aaaarecord.Address, 53), rClass);
+            }
+
+            return null;
         }
 
-        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(IEnumerable<IQuestion> questions, IPEndPoint dnsServer = null)
+        public DNS.ExternalInterfaces.IMessage AuthoratativeQuery(IEnumerable<DNS.ExternalInterfaces.IQuestion> questions, IPEndPoint dnsServer = null, bool ipv6Failover = false)
         {
             var domain = questions.FirstOrDefault().QName;
             var index = domain.LastIndexOf('.');
@@ -235,14 +237,19 @@ namespace ManagedDnsQuery
             if (arecord != null)
                 return Query(questions, new IPEndPoint(arecord.Address, 53));
 
-            //Support for IP6 when IP4 does not exist
-            auth = Query(soaRecord.MName, RecordType.AaaaRecord, dnsServer);
-            if (auth.Answers == null || !auth.Answers.Any())
-                return null;
+            if (ipv6Failover)
+            {
+                //Support for IP6 when IP4 does not exist
+                auth = Query(soaRecord.MName, RecordType.AaaaRecord, dnsServer);
+                if (auth.Answers == null || !auth.Answers.Any())
+                    return null;
 
-            var aaaarecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.AaaaRecord;
+                var aaaarecord = auth.Answers.FirstOrDefault() as DNS.ExternalConcretes.AaaaRecord;
 
-            return aaaarecord == null ? null : Query(questions, new IPEndPoint(aaaarecord.Address, 53));
+                return aaaarecord == null ? null : Query(questions, new IPEndPoint(aaaarecord.Address, 53));
+            }
+
+            return null;
         }
 
         public string QueryWhois(string domainName)
@@ -260,7 +267,7 @@ namespace ManagedDnsQuery
             return !string.IsNullOrEmpty(secondResult) ? secondResult : firstResult;
         }
 
-        public SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null)
+        public SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null, bool ipv6Failover = false)
         {
             IPAddress _ip = null;
             if(IPAddress.TryParse(ip, out _ip))
@@ -269,7 +276,7 @@ namespace ManagedDnsQuery
             if(string.IsNullOrEmpty(domain.TryTrim()))
                 return SpfResult.NoResult;
 
-            var spf = GetSpfRecords(domain, dnsServer); //Recursivly lookup including includes and redirects.
+            var spf = GetSpfRecords(domain, dnsServer, ipv6Failover); //Recursivly lookup including includes and redirects.
             if (spf == null || !spf.Any())
                 return SpfResult.NoResult;
 
@@ -285,6 +292,8 @@ namespace ManagedDnsQuery
                 //Test each mechanism individually in each record.
                 foreach (var part in rec.Text.Split(' '))
                 {
+                    if (string.IsNullOrEmpty(part.TryTrim()))
+                        continue;
                     if (string.Equals("v=spf1", part.TryTrim(), StringComparison.CurrentCultureIgnoreCase))
                         continue;
                     if (string.Equals("redirect=", part.TryTrim().TrySubstring(0, 9), StringComparison.CurrentCultureIgnoreCase)) 
@@ -292,7 +301,6 @@ namespace ManagedDnsQuery
                     if (string.Equals("include:", part.TryTrim().TrySubstring(0, 8), StringComparison.CurrentCultureIgnoreCase))
                         continue;
 
-                    //TODO: Verify qualifier....
                     #region IP Mechanism
                     if (string.Equals("ip", part.TrySubstring(0, 2), StringComparison.CurrentCultureIgnoreCase) || string.Equals("ip", part.TrySubstring(1, 2), StringComparison.CurrentCultureIgnoreCase))
                     {
@@ -352,7 +360,7 @@ namespace ManagedDnsQuery
 
                         var questions = (from IResourceRecord mx in mxRecs.Answers
                                          select (DNS.ExternalConcretes.MxRecord) mx.ConvertToExternalType()
-                                         into temp select new Question(null)
+                                         into temp select new DNS.ExternalConcretes.Question
                                             {
                                                 QName = temp.Name, 
                                                 QType = RecordType.ARecord, 
@@ -360,7 +368,7 @@ namespace ManagedDnsQuery
                                             });
 
                         var addresses = new List<IPAddress>();
-                        var aRecs = AuthoratativeQuery(questions, dnsServer ?? _defaultServer1);
+                        var aRecs = AuthoratativeQuery(questions, dnsServer ?? _defaultServer1, ipv6Failover);
                         queryCount++;
                         if (aRecs.Answers != null && aRecs.Answers.Any())
                         {
@@ -373,7 +381,7 @@ namespace ManagedDnsQuery
                             questions = (    from IResourceRecord mx in mxRecs.Answers
                                              select (DNS.ExternalConcretes.MxRecord)mx.ConvertToExternalType()
                                                  into temp
-                                                 select new Question(null)
+                                                 select new DNS.ExternalConcretes.Question
                                                  {
                                                      QName = temp.Name,
                                                      QType = RecordType.AaaaRecord,
@@ -409,11 +417,12 @@ namespace ManagedDnsQuery
             return SpfResult.Fail;
         }
 
-        private IEnumerable<DNS.ExternalConcretes.TxtRecord> GetSpfRecords(string domain, IPEndPoint dnsServer = null)
+        private IEnumerable<DNS.ExternalConcretes.TxtRecord> GetSpfRecords(string domain, IPEndPoint dnsServer = null, bool ipv6Failover = false)
         {
             var records = new List<DNS.ExternalConcretes.TxtRecord>();
 
-            var spf = AuthoratativeQuery(domain, RecordType.TxtRecord, dnsServer??_defaultServer1); //Only query TXT records since SPF was obsoleted in aug 2013
+            //Only query TXT records since SPF was obsoleted in aug 2013
+            var spf = AuthoratativeQuery(domain, RecordType.TxtRecord, dnsServer??_defaultServer1, RecordClass.In, ipv6Failover); 
             if (spf.Answers == null || !spf.Answers.Any())
                 return records;
 
@@ -433,7 +442,7 @@ namespace ManagedDnsQuery
                     if(scratch.Length < 2)
                         continue;
                     
-                    records.InsertRange(0, GetSpfRecords(scratch.Skip(1).FirstOrDefault()));
+                    records.InsertRange(0, GetSpfRecords(scratch.Skip(1).FirstOrDefault(), dnsServer, ipv6Failover));
                 }
             }
 
@@ -448,7 +457,7 @@ namespace ManagedDnsQuery
                     if (scratch.Length < 2)
                         continue;
 
-                    records.InsertRange(0, GetSpfRecords(scratch.Skip(1).FirstOrDefault()));
+                    records.InsertRange(0, GetSpfRecords(scratch.Skip(1).FirstOrDefault(), dnsServer, ipv6Failover));
                 }
             }
             #endregion

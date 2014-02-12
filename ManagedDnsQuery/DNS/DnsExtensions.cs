@@ -27,8 +27,10 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using ManagedDnsQuery.DNS.MessageingConcretes;
 using ManagedDnsQuery.DNS.MessageingInterfaces;
 
 namespace ManagedDnsQuery.DNS
@@ -87,6 +89,11 @@ namespace ManagedDnsQuery.DNS
             }
 
             return sb.ToString();
+        }
+
+        internal static IEnumerable<IQuestion> ToQuestions(this IEnumerable<ExternalInterfaces.IQuestion> values)
+        {
+            return values.Select(val => new Question(null) {QName = val.QName, QType = val.QType, QClass = val.QClass}).ToArray();
         }
     }
 }

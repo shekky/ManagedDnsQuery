@@ -39,10 +39,10 @@ namespace ManagedDnsQuery
         int Retries { get; set; }
 
         IMessage Query(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
-        IMessage Query(IEnumerable<DNS.MessageingInterfaces.IQuestion> questions, IPEndPoint dnsServer = null);
-        IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In);
-        IMessage AuthoratativeQuery(IEnumerable<DNS.MessageingInterfaces.IQuestion> questions, IPEndPoint dnsServer = null);
+        IMessage Query(IEnumerable<IQuestion> questions, IPEndPoint dnsServer = null);
+        IMessage AuthoratativeQuery(string domain, RecordType queryType, IPEndPoint dnsServer = null, RecordClass rClass = RecordClass.In, bool ipv6Failover = false);
+        IMessage AuthoratativeQuery(IEnumerable<IQuestion> questions, IPEndPoint dnsServer = null, bool ipv6Failover = false);
         string QueryWhois(string domainName);
-        SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null);
+        SpfResult VerifySpfRecord(string domain, string ip, IPEndPoint dnsServer = null, bool ipv6Failover = false);
     }
 }
