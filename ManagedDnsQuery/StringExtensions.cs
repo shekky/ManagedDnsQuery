@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace ManagedDnsQuery
 {
     /// <summary>
@@ -29,6 +30,11 @@ namespace ManagedDnsQuery
         public static string TryToUpper(this string value)
         {
             return (string.IsNullOrEmpty(value) ? value : value.ToUpper());
+        }
+
+        public static bool AreEqual(this string value1, string value2)
+        {
+            return string.Equals(value1, value2, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

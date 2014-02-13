@@ -276,13 +276,12 @@ namespace ManagedDnsQuery
             if(string.IsNullOrEmpty(domain.TryTrim()))
                 return SpfResult.NoResult;
 
-            var spf = GetSpfRecords(domain, dnsServer, ipv6Failover); //Recursivly lookup including includes and redirects.
+            var spf = GetSpfRecords(domain, dnsServer ?? _defaultServer1, ipv6Failover); //Recursivly lookup including includes and redirects.
             if (spf == null || !spf.Any())
                 return SpfResult.NoResult;
 
             var queryCount = 0;
             //foreach spf record fetched, loop till pass.
-            var qualifiers = new[] { "+", "-", "~", "?" };
             var results = new List<SpfResult>();
             foreach (var rec in spf)
             {
@@ -292,123 +291,46 @@ namespace ManagedDnsQuery
                 //Test each mechanism individually in each record.
                 foreach (var part in rec.Text.Split(' '))
                 {
-                    if (string.IsNullOrEmpty(part.TryTrim()))
-                        continue;
-                    if (string.Equals("v=spf1", part.TryTrim(), StringComparison.CurrentCultureIgnoreCase))
-                        continue;
-                    if (string.Equals("redirect=", part.TryTrim().TrySubstring(0, 9), StringComparison.CurrentCultureIgnoreCase)) 
-                        continue;
-                    if (string.Equals("include:", part.TryTrim().TrySubstring(0, 8), StringComparison.CurrentCultureIgnoreCase))
+                    if(Skip(part))
                         continue;
 
-                    #region IP Mechanism
-                    if (string.Equals("ip", part.TrySubstring(0, 2), StringComparison.CurrentCultureIgnoreCase) || string.Equals("ip", part.TrySubstring(1, 2), StringComparison.CurrentCultureIgnoreCase))
+                    var parts = ParseSpfPart(part);
+
+                    if (part.TrySubstring(0, 2).AreEqual("ip") || part.TrySubstring(1, 2).AreEqual("ip"))
                     {
-                        var qualifier = qualifiers.Contains(part.TrySubstring(0, 1)) ? part.TrySubstring(0, 1) : null;
+                        //var qualifier = parts["qualifier"];
                         if (SpfChecker.VerifyIpMechanism(_ip, part.TryTrim()) == SpfResult.Pass)
                             return SpfResult.Pass;
                     }
-                    #endregion
 
-                    #region A Record Mechanism
-                    if (string.Equals("a", part.TrySubstring(0, 1), StringComparison.CurrentCultureIgnoreCase) || string.Equals("a", part.TrySubstring(1, 1), StringComparison.CurrentCultureIgnoreCase))
+                    if (part.TrySubstring(0, 1).AreEqual("a") || part.TrySubstring(1, 1).AreEqual("a"))
                     {
-                        var qualifier = qualifiers.Contains(part.TrySubstring(0, 1)) ? part.TrySubstring(0, 1) : null;
-                        var range = part.Split('/').Skip(1).FirstOrDefault().TryTrim(); //Get range first.
-                        var host = part.Split('/').FirstOrDefault().Split(':').FirstOrDefault().TryTrim(); //Get domain.
-                        if (string.Equals("a", host, StringComparison.CurrentCultureIgnoreCase))
-                            host = domain.TryTrim();
+                        //var qualifier = parts["qualifier"];
+                        if (!string.Equals("a", parts["host"], StringComparison.CurrentCultureIgnoreCase))
+                            continue; //Somthing went wrong...
 
-                        var addresses = new List<IPAddress>();
-                        var aRecs = AuthoratativeQuery(host, RecordType.ARecord, dnsServer ?? _defaultServer1);
-                        queryCount++;
-                        if (aRecs.Answers != null && aRecs.Answers.Any())
-                        {
-                            addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.ARecord) != null)
-                                                            .Select(an => (an as DNS.ExternalConcretes.ARecord).Address));
-                        }
-                        else
-                        {
-                            //Try Aaaa in the event no A records. 
-                            aRecs = AuthoratativeQuery(host, RecordType.AaaaRecord, dnsServer ?? _defaultServer1);
-                            queryCount++;
-                            if (aRecs.Answers != null && aRecs.Answers.Any())
-                                addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.AaaaRecord) != null)
-                                                            .Select(an => (an as DNS.ExternalConcretes.AaaaRecord).Address));
-                            else
-                                continue; //Fail / error...
-                        }
+                        var addresses = GetARecordsForSpf(ref queryCount, domain.TryTrim(), dnsServer ?? _defaultServer1, ipv6Failover);
 
-                        if (SpfChecker.VerifyAMechanism(_ip, addresses, (!string.IsNullOrEmpty(range) ? range.TryTrim() : null)) == SpfResult.Pass)
+                        if (SpfChecker.VerifyAMechanism(_ip, addresses, (!string.IsNullOrEmpty(parts["range"]) ? parts["range"] : null)) == SpfResult.Pass)
                             return SpfResult.Pass;
                     }
-                    #endregion
 
-                    #region MX Record Mechanism
-                    if (string.Equals("mx", part.TrySubstring(0, 2), StringComparison.CurrentCultureIgnoreCase) || string.Equals("mx", part.TrySubstring(1, 2), StringComparison.CurrentCultureIgnoreCase))
+                    if (part.TrySubstring(0, 2).AreEqual("mx") || part.TrySubstring(1, 2).AreEqual("mx"))
                     {
-                        var qualifier = qualifiers.Contains(part.TrySubstring(0, 1)) ? part.TrySubstring(0, 1) : null;
-                        var range = part.Split('/').Skip(1).FirstOrDefault().TryTrim(); //Get range first.
-                        var host = part.Split('/').FirstOrDefault().Split(':').FirstOrDefault().TryTrim(); //Get domain.
-                        if (string.Equals("mx", host, StringComparison.CurrentCultureIgnoreCase))
-                            host = domain.TryTrim();
+                        //var qualifier = parts["qualifier"];
+                        if (string.Equals("mx", parts["host"], StringComparison.CurrentCultureIgnoreCase))
+                            continue; //Somthing went wrong...
 
-                        var mxRecs = AuthoratativeQuery(host, RecordType.MxRecord, dnsServer ?? _defaultServer1);
-                        queryCount++;
-                        if(mxRecs.Answers == null || !mxRecs.Answers.Any())
-                            continue; //No mxes 
+                        var addresses = GetMxRecordsForSpf(ref queryCount, domain.TryTrim(), dnsServer ?? _defaultServer1, ipv6Failover);
 
-                        var questions = (from IResourceRecord mx in mxRecs.Answers
-                                         select (DNS.ExternalConcretes.MxRecord) mx.ConvertToExternalType()
-                                         into temp select new DNS.ExternalConcretes.Question
-                                            {
-                                                QName = temp.Name, 
-                                                QType = RecordType.ARecord, 
-                                                QClass = RecordClass.In
-                                            });
-
-                        var addresses = new List<IPAddress>();
-                        var aRecs = AuthoratativeQuery(questions, dnsServer ?? _defaultServer1, ipv6Failover);
-                        queryCount++;
-                        if (aRecs.Answers != null && aRecs.Answers.Any())
-                        {
-                            addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.ARecord) != null)
-                                                            .Select(an => (an as DNS.ExternalConcretes.ARecord).Address));
-                        }
-                        else
-                        {
-                            //Try Aaaa in the event no A records. 
-                            questions = (    from IResourceRecord mx in mxRecs.Answers
-                                             select (DNS.ExternalConcretes.MxRecord)mx.ConvertToExternalType()
-                                                 into temp
-                                                 select new DNS.ExternalConcretes.Question
-                                                 {
-                                                     QName = temp.Name,
-                                                     QType = RecordType.AaaaRecord,
-                                                     QClass = RecordClass.In
-                                                 });
-
-                            aRecs = AuthoratativeQuery(questions, dnsServer ?? _defaultServer1);
-                            queryCount++;
-                             
-                            if (aRecs.Answers != null && aRecs.Answers.Any())
-                                addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.AaaaRecord) != null)
-                                                            .Select(an => (an as DNS.ExternalConcretes.AaaaRecord).Address));
-                            else
-                                continue; //Fail / error...
-                        }
-
-                        if (SpfChecker.VerifyMxMechanism(_ip, addresses, (!string.IsNullOrEmpty(range) ? range.TryTrim() : null)) == SpfResult.Pass)
+                        if (SpfChecker.VerifyMxMechanism(_ip, addresses, (!string.IsNullOrEmpty(parts["range"]) ? parts["range"] : null)) == SpfResult.Pass)
                             return SpfResult.Pass;
                     }
-                    #endregion
 
-                    #region PTR Record Mechanism
-                    if (string.Equals("ptr", part.TrySubstring(0, 3), StringComparison.CurrentCultureIgnoreCase) || string.Equals("ptr", part.TrySubstring(0, 3), StringComparison.CurrentCultureIgnoreCase))
+                    if (part.TrySubstring(0, 3).AreEqual("ptr") || part.TrySubstring(1, 3).AreEqual("ptr"))
                     {
 
                     }
-                    #endregion
 
                     //EXISTS - A record exists no matter the address.
                 }
@@ -417,12 +339,38 @@ namespace ManagedDnsQuery
             return SpfResult.Fail;
         }
 
-        private IEnumerable<DNS.ExternalConcretes.TxtRecord> GetSpfRecords(string domain, IPEndPoint dnsServer = null, bool ipv6Failover = false)
+        private bool Skip(string part)
+        {
+            if (string.IsNullOrEmpty(part.TryTrim()))
+                return true;
+            if (string.Equals("v=spf1", part.TryTrim(), StringComparison.CurrentCultureIgnoreCase))
+                return true;
+            if (string.Equals("redirect=", part.TryTrim().TrySubstring(0, 9), StringComparison.CurrentCultureIgnoreCase))
+                return true;
+            if (string.Equals("include:", part.TryTrim().TrySubstring(0, 8), StringComparison.CurrentCultureIgnoreCase))
+                return true;
+
+            return false;
+        }
+
+        private IDictionary<string, string> ParseSpfPart(string part)
+        {
+            var qualifiers = new[] { "+", "-", "~", "?" };
+
+            return new Dictionary<string, string>
+                       {
+                           { "qualifier", qualifiers.Contains(part.TrySubstring(0, 1)) ? part.TrySubstring(0, 1).TryTrim() : null },
+                           { "range", part.Split('/').Skip(1).FirstOrDefault().TryTrim() },
+                           { "host", part.Split('/').FirstOrDefault().Split(':').FirstOrDefault().TryTrim() }
+                       };
+        }
+
+        private IEnumerable<DNS.ExternalConcretes.TxtRecord> GetSpfRecords(string domain, IPEndPoint dnsServer, bool ipv6Failover)
         {
             var records = new List<DNS.ExternalConcretes.TxtRecord>();
 
             //Only query TXT records since SPF was obsoleted in aug 2013
-            var spf = AuthoratativeQuery(domain, RecordType.TxtRecord, dnsServer??_defaultServer1, RecordClass.In, ipv6Failover); 
+            var spf = AuthoratativeQuery(domain, RecordType.TxtRecord, dnsServer, RecordClass.In, ipv6Failover); 
             if (spf.Answers == null || !spf.Answers.Any())
                 return records;
 
@@ -467,5 +415,84 @@ namespace ManagedDnsQuery
 
             return records;
         }
+
+        private IEnumerable<IPAddress> GetMxRecordsForSpf(ref int queryCount, string domain, IPEndPoint dnsServer, bool ipv6Failover)
+        {
+            var addresses = new List<IPAddress>();
+
+            var mxRecs = AuthoratativeQuery(domain, RecordType.MxRecord, dnsServer ?? _defaultServer1);
+            queryCount++;
+            if (mxRecs.Answers == null || !mxRecs.Answers.Any())
+                return null; //No mxes 
+
+            var questions = (from IResourceRecord mx in mxRecs.Answers
+                             select (DNS.ExternalConcretes.MxRecord)mx.ConvertToExternalType()
+                                 into temp
+                                 select new DNS.ExternalConcretes.Question
+                                 {
+                                     QName = temp.Name,
+                                     QType = RecordType.ARecord,
+                                     QClass = RecordClass.In
+                                 });
+
+            var aRecs = AuthoratativeQuery(questions, dnsServer, ipv6Failover);
+            queryCount++;
+
+            if (aRecs.Answers != null && aRecs.Answers.Any())
+            {
+                addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.ARecord) != null)
+                                                .Select(an => (an as DNS.ExternalConcretes.ARecord).Address));
+            }
+            else if (ipv6Failover)
+            {
+                //Try Aaaa in the event no A records. 
+                questions = (from IResourceRecord mx in mxRecs.Answers
+                             select (DNS.ExternalConcretes.MxRecord)mx.ConvertToExternalType()
+                                 into temp
+                                 select new DNS.ExternalConcretes.Question
+                                 {
+                                     QName = temp.Name,
+                                     QType = RecordType.AaaaRecord,
+                                     QClass = RecordClass.In
+                                 });
+
+                aRecs = AuthoratativeQuery(questions, dnsServer ?? _defaultServer1);
+                queryCount++;
+
+                if (aRecs.Answers != null && aRecs.Answers.Any())
+                    addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.AaaaRecord) != null)
+                                                .Select(an => (an as DNS.ExternalConcretes.AaaaRecord).Address));
+            }
+
+            return addresses;
+        }
+
+        private IEnumerable<IPAddress> GetARecordsForSpf(ref int queryCount, string domain, IPEndPoint dnsServer, bool ipv6Failover)
+        {
+            var addresses = new List<IPAddress>();
+
+            var aRecs = AuthoratativeQuery(domain, RecordType.ARecord, dnsServer ?? _defaultServer1);
+            queryCount++;
+
+            if (aRecs.Answers != null && aRecs.Answers.Any())
+            {
+                addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.ARecord) != null)
+                                                .Select(an => (an as DNS.ExternalConcretes.ARecord).Address));
+            }
+            else if (ipv6Failover)
+            {
+                //Try Aaaa in the event no A records. 
+                aRecs = AuthoratativeQuery(domain, RecordType.AaaaRecord, dnsServer ?? _defaultServer1);
+                queryCount++;
+
+                if (aRecs.Answers != null && aRecs.Answers.Any())
+                    addresses.AddRange(aRecs.Answers.Where(an => (an as DNS.ExternalConcretes.AaaaRecord) != null)
+                                                .Select(an => (an as DNS.ExternalConcretes.AaaaRecord).Address));
+            }
+
+            return addresses;
+        }
+
+         
     }
 }
